@@ -13,7 +13,6 @@ import ru.practicum.shareit.user.storage.UserStorage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 @Component
 public class ItemStorageInMemory implements ItemStorage {
