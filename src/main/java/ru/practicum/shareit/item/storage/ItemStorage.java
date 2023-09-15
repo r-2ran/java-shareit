@@ -8,16 +8,16 @@ import java.util.List;
 
 @Component
 public interface ItemStorage {
-    Item addItem(int userId, ItemDto itemDto);
+    Item addItem(long userId, ItemDto itemDto);
 
-    Item updateItem(int itemId, ItemDto itemDto, int userId);
+    Item updateItem(long itemId, ItemDto itemDto, long userId);
 
     void deleteItem(int itemId, int userId);
 
-    Item getItemById(int itemId, int userId);
+    Item getItemById(long itemId, long userId);
 
-    List<ItemDto> searchItem(String text, int userId);
+    List<ItemDto> searchItem(String text, long userId);
 
-    List<ItemDto> getAllItemsByUser(int userId);
+    List<ItemDto> getAllItemsByUser(long userId);
 
 }

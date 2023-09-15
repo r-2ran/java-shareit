@@ -17,7 +17,7 @@ import java.util.List;
 @Component
 public class ItemStorageInMemory implements ItemStorage {
     @Getter
-    private final HashMap<Integer, Item> items = new HashMap<>();
+    private final HashMap<Long, Item> items = new HashMap<>();
     private final UserStorage userStorage;
     private int generatedId = 1;
 
@@ -27,17 +27,16 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public Item addItem(int userId, ItemDto itemDto) throws
+    public Item addItem(long userId, ItemDto itemDto) throws
             ValidationException {
         Item item = ItemMapper.toItem(itemDto);
         item.setId(generatedId++);
-        item.setOwner(userStorage.getUserById(userId));
         items.put(item.getId(), item);
         return item;
     }
 
     @Override
-    public Item updateItem(int itemId, ItemDto itemDto, int userId) throws NoSuchUserFound {
+    public Item updateItem(long itemId, ItemDto itemDto, long userId) throws NoSuchUserFound {
         if (itemDto.getName() != null) {
             items.get(itemId).setName(itemDto.getName());
         }
@@ -56,12 +55,12 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public Item getItemById(int itemId, int userId) {
+    public Item getItemById(long itemId, long userId) {
         return items.get(itemId);
     }
 
     @Override
-    public List<ItemDto> searchItem(String text, int userId) {
+    public List<ItemDto> searchItem(String text, long userId) {
         List<ItemDto> result = new ArrayList<>();
         for (Item item : items.values()) {
             if ((item.getName().toLowerCase().contains(text.toLowerCase())
@@ -74,7 +73,7 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public List<ItemDto> getAllItemsByUser(int userId) {
+    public List<ItemDto> getAllItemsByUser(long userId) {
         List<ItemDto> res = new ArrayList<>();
         for (Item item : items.values()) {
             if (item.getOwner().getId() == userId) {

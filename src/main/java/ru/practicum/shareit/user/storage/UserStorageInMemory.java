@@ -10,12 +10,12 @@ import java.util.*;
 
 @Component
 public class UserStorageInMemory implements UserStorage {
-    private final HashMap<Integer, User> users = new HashMap<>();
+    private final HashMap<Long, User> users = new HashMap<>();
     private final Set<String> usersEmails = new HashSet<>();
     private int generatedId = 1;
 
     @Override
-    public User getUserById(int userId) {
+    public User getUserById(long userId) {
         return users.get(userId);
     }
 
@@ -77,7 +77,7 @@ public class UserStorageInMemory implements UserStorage {
     }
 
     @Override
-    public HashMap<Integer, User> getHashMapUser() {
+    public HashMap<Long, User> getHashMapUser() {
         return users;
     }
 }

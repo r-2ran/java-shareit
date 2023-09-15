@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Component
-public class ItemDto {
+public class ItemDtoFull {
 
     @NotNull
     long id;
@@ -33,11 +33,10 @@ public class ItemDto {
     BookingForItemDto nextBooking;
     List<CommentDtoOutput> comments;
 
-    public ItemDto(long id, String name, String description, Boolean available, User owner) {
+    public ItemDtoFull(long id, String name, String description, Boolean available) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.available = available;
-        this.owner = owner;
     }
 }

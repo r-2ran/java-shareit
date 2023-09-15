@@ -8,7 +8,7 @@ import java.util.List;
 
 @Component
 public interface UserStorage {
-    User getUserById(int userId);
+    User getUserById(long userId);
 
     User addUser(User user);
 
@@ -18,5 +18,5 @@ public interface UserStorage {
 
     List<User> getAllUsers();
 
-    HashMap<Integer, User> getHashMapUser();
+    HashMap<Long, User> getHashMapUser();
 }

@@ -11,13 +11,13 @@ import java.util.List;
 public interface UserService {
     List<UserDto> getAllUsers();
 
-    UserDto getUserById(int userId);
+    UserDto getUserById(long userId);
 
-    User addUser(User user);
+    UserDto addUser(UserDto userDto);
 
-    User updateUser(int userId, User user);
+    UserDto updateUser(long userId, UserDto userDto);
 
-    void deleteUser(int userId);
+    void deleteUser(long userId);
 
-    HashMap<Integer, User> userHashMap();
+    HashMap<Long, User> userHashMap();
 }
