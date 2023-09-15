@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.service;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoInput;
@@ -19,7 +20,6 @@ import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +105,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public BookingDto getBookingById(long bookingId, long userId) throws NoSuchBookingFound,
             NoSuchUserFound {
@@ -131,7 +131,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(bookingRepository.findById(bookingId).get());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getBookingByBooker(long userId, String stateStr)
             throws BookingException, NoSuchUserFound {
@@ -175,7 +175,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDtoList(bookings);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getBookingByOwner(long userId, String stateStr) throws BookingException {
         if (userRepository.findById(userId).isEmpty()) {

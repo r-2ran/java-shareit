@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.exception.BookingException;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -21,7 +22,6 @@ import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public ItemDto getItemById(long itemId, long userId) throws NoSuchUserFound,
             NoSuchItemFound {
@@ -112,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDtoList(itemRepository.search(text));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<ItemDto> getAllItemsByUser(long userId) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {

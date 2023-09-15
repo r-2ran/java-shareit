@@ -2,13 +2,13 @@ package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.*;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,13 +17,13 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAllUsers() {
         return UserMapper.toUserDtos(userRepository.findAll());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public UserDto getUserById(long userId) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
@@ -56,10 +56,5 @@ public class UserServiceImpl implements UserService {
             inDB.setEmail(userDto.getEmail());
         }
         return UserMapper.toUserDto(userRepository.save(inDB));
-    }
-
-    @Override
-    public HashMap<Long, User> userHashMap() {
-        return null;
     }
 }
