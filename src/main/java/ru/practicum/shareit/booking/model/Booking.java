@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     long id;
     @Column(name = "start_date")
     LocalDateTime start;
@@ -32,6 +33,7 @@ public class Booking {
     @JoinColumn(name = "booker_id", referencedColumnName = "id")
     User booker;
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     BookingStatus status;
 
     public Booking(LocalDateTime start, LocalDateTime end) {
