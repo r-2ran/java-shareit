@@ -26,11 +26,9 @@ public class Booking {
     LocalDateTime start;
     @Column(name = "end_date")
     LocalDateTime end;
-    @ManyToOne
-    @Column(name = "item_id")
+    @ManyToOne(targetEntity = Item.class)
     Item item;
-    @Column(name = "booker_id")
-    @ManyToOne
+    @ManyToOne(targetEntity = User.class)
     User booker;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

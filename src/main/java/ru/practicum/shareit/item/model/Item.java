@@ -25,11 +25,9 @@ public class Item {
     @Getter
     @Column(name = "is_available")
     Boolean isAvailable;
-    @ManyToOne
-    @Column(name = "owner_id")
+    @ManyToOne(targetEntity = User.class)
     User owner;
-    @ManyToOne
-    @JoinColumn(name = "request_id")
+    @ManyToOne(targetEntity = ItemRequest.class)
     ItemRequest request;
 
     public Item(String name, String description, boolean isAvailable) {

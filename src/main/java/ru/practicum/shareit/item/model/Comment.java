@@ -25,11 +25,9 @@ public class Comment {
     @NotBlank
     @Column(name = "text")
     String text;
-    @ManyToOne
-    @Column(name = "item_id")
+    @ManyToOne(targetEntity = Item.class)
     Item item;
-    @ManyToOne
-    @Column(name = "author_id")
+    @ManyToOne(targetEntity = User.class)
     User author;
     @Column(name = "created")
     LocalDateTime created;
