@@ -28,14 +28,14 @@ public class ItemController {
 
     @PatchMapping(ITEM_ID)
     public ItemDto updateItem(@RequestHeader(USER_ID) long userId,
-                              @PathVariable int itemId,
+                              @PathVariable long itemId,
                               @RequestBody ItemDto itemDto) {
         return itemService.updateItem(itemId, itemDto, userId);
     }
 
     @GetMapping(ITEM_ID)
     public ItemDto getItemById(@RequestHeader(USER_ID) long userId,
-                               @PathVariable int itemId) {
+                               @PathVariable long itemId) {
         return itemService.getItemById(itemId, userId);
     }
 
