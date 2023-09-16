@@ -20,14 +20,15 @@ import java.time.LocalDateTime;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
     long id;
     @NotBlank
     @Column(name = "text")
     String text;
-    @ManyToOne(targetEntity = Item.class)
+    @ManyToOne
+    @JoinColumn(name = "item_id")
     Item item;
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne
+    @JoinColumn(name = "author_id")
     User author;
     @Column(name = "created")
     LocalDateTime created;

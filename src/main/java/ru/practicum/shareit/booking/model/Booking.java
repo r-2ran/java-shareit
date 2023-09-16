@@ -20,15 +20,16 @@ import java.time.LocalDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
     long id;
     @Column(name = "start_date")
     LocalDateTime start;
     @Column(name = "end_date")
     LocalDateTime end;
-    @ManyToOne(targetEntity = Item.class)
+    @ManyToOne
+    @JoinColumn(name = "item_id")
     Item item;
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne
+    @JoinColumn(name = "booker_id")
     User booker;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

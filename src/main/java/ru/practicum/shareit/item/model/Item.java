@@ -16,7 +16,6 @@ import javax.persistence.*;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_id")
     long id;
     @Column(name = "name")
     String name;
@@ -25,9 +24,11 @@ public class Item {
     @Getter
     @Column(name = "is_available")
     Boolean isAvailable;
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
     User owner;
-    @ManyToOne(targetEntity = ItemRequest.class)
+    @ManyToOne
+    @JoinColumn(name = "request_id")
     ItemRequest request;
 
     public Item(String name, String description, boolean isAvailable) {
