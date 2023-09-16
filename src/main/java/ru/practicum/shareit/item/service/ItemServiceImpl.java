@@ -6,14 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.exception.BookingException;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentDtoOutput;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.NoSuchItemFound;
 import ru.practicum.shareit.item.mapper.CommentMapper;
-import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -22,9 +21,14 @@ import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import static ru.practicum.shareit.booking.mapper.BookingMapper.*;
+import static ru.practicum.shareit.item.mapper.ItemMapper.*;
+import static ru.practicum.shareit.item.mapper.CommentMapper.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -42,9 +46,9 @@ public class ItemServiceImpl implements ItemService {
                     "so cannot add item,", userId));
         } else {
             User user = userRepository.findById(userId).get();
-            Item item = ItemMapper.toItem(itemDto);
+            Item item = toItem(itemDto);
             item.setOwner(user);
-            return ItemMapper.toItemDto(itemRepository.save(item));
+            return toItemDto(itemRepository.save(item));
         }
     }
 
@@ -68,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             item.setIsAvailable(itemDto.getAvailable());
         }
-        return ItemMapper.toItemDto(itemRepository.save(item));
+        return toItemDto(itemRepository.save(item));
     }
 
     @Transactional(readOnly = true)
@@ -81,23 +85,41 @@ public class ItemServiceImpl implements ItemService {
         if (itemRepository.findById(itemId).isEmpty()) {
             throw new NoSuchItemFound(String.format("no such item id = %d", itemId));
         }
-        ItemDto item = ItemMapper.toItemDto(itemRepository.findById(itemId).get());
+        ItemDto item = toItemDto(itemRepository.findById(itemId).get());
         item.setComments(CommentMapper.toCommentDtosList(commentRepository.findAll()));
-        if (itemRepository.findById(itemId).get().getOwner().getId() == userId
-                && !bookingRepository.findAllByItemId(itemId, Sort.unsorted()).isEmpty()) {
-            Sort sortLast = Sort.by(Sort.Direction.ASC, "start");
-            Sort sortNext = Sort.by(Sort.Direction.DESC, "start");
-            if (!bookingRepository.findAllByItemId(itemId, sortLast).isEmpty()) {
-                item.setLastBooking(BookingMapper.fromBooking(
-                        bookingRepository.findAllByItemId(itemId, sortLast).get(0)));
-            } else {
-                item.setLastBooking(null);
+        if (itemRepository.findById(itemId).get().getOwner().getId() == userId) {
+            LocalDateTime time = LocalDateTime.now();
+            Sort sort = Sort.by(Sort.Direction.DESC, "start");
+            Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
+            Optional<Booking> lastBooking =
+                    bookingRepository.findAllByItemIdAndStartIsBefore(
+                                    itemId,
+                                    time,
+                                    sort)
+                            .stream()
+                            .findFirst();
+            lastBooking.ifPresent(booking -> item.setLastBooking(fromBooking(booking)));
+
+            if (lastBooking.isEmpty() &&
+                    !bookingRepository.findAllByItemId(itemId, sort).isEmpty()) {
+                return item;
             }
-            if (item.getLastBooking() == null) {
-                item.setNextBooking(null);
-            } else {
-                item.setNextBooking(BookingMapper.fromBooking(
-                        bookingRepository.findAllByItemId(itemId, sortNext).get(0)));
+            Optional<Booking> nextBooking =
+                    bookingRepository.findAllByItemIdAndStartIsAfter(
+                                    itemId,
+                                    time,
+                                    sortNext)
+                            .stream()
+                            .findFirst();
+            nextBooking.ifPresent(booking -> item.setNextBooking(fromBooking(booking)));
+            if (nextBooking.isEmpty()) {
+                lastBooking = bookingRepository.findAllByItemIdAndEndIsAfter(
+                                itemId,
+                                time,
+                                sort)
+                        .stream()
+                        .findFirst();
+                lastBooking.ifPresent(booking -> item.setLastBooking(fromBooking(booking)));
             }
         }
         return item;
@@ -109,7 +131,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return ItemMapper.toItemDtoList(itemRepository.search(text));
+        return toItemDtoList(itemRepository.search(text));
     }
 
     @Transactional(readOnly = true)
@@ -118,16 +140,30 @@ public class ItemServiceImpl implements ItemService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
-        Sort sortLast = Sort.by(Sort.Direction.ASC, "start");
-        Sort sortNext = Sort.by(Sort.Direction.DESC, "start");
-        List<ItemDto> items = ItemMapper.toItemDtoList(itemRepository.findAllByOwnerId(userId));
+        List<ItemDto> items = toItemDtoList(itemRepository.findAllByOwnerId(userId));
         for (ItemDto itemDto : items) {
             if (itemRepository.findById(itemDto.getId()).get().getOwner().getId() == userId
                     && !bookingRepository.findAllByItemId(itemDto.getId(), Sort.unsorted()).isEmpty()) {
-                itemDto.setLastBooking(BookingMapper.fromBooking(
-                        bookingRepository.findAllByItemId(itemDto.getId(), sortLast).get(0)));
-                itemDto.setNextBooking(BookingMapper.fromBooking(
-                        bookingRepository.findAllByItemId(itemDto.getId(), sortNext).get(0)));
+                LocalDateTime time = LocalDateTime.now();
+                Sort sort = Sort.by(Sort.Direction.DESC, "start");
+                Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
+                Optional<Booking> lastBooking =
+                        bookingRepository.findAllByItemIdAndStartIsBefore(
+                                        itemDto.getId(),
+                                        time,
+                                        sort)
+                                .stream()
+                                .findFirst();
+                lastBooking.ifPresent(booking -> itemDto.setLastBooking(fromBooking(booking)));
+
+                Optional<Booking> nextBooking =
+                        bookingRepository.findAllByItemIdAndStartIsAfter(
+                                        itemDto.getId(),
+                                        time,
+                                        sortNext)
+                                .stream()
+                                .findFirst();
+                nextBooking.ifPresent(booking -> itemDto.setNextBooking(fromBooking(booking)));
             }
         }
         return items;
@@ -153,10 +189,10 @@ public class ItemServiceImpl implements ItemService {
             throw new BookingException(String.format("item id = %d by user id = %d" +
                     " has not been rented", itemId, userId));
         }
-        Comment comment = CommentMapper.toComment(commentDto);
+        Comment comment = toComment(commentDto);
         comment.setCreated(LocalDateTime.now());
         comment.setAuthor(user);
         comment.setItem(item);
-        return CommentMapper.commentToOutput(commentRepository.save(comment));
+        return commentToOutput(commentRepository.save(comment));
     }
 }
