@@ -16,7 +16,7 @@ import javax.persistence.*;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "item_id")
     long id;
     @Column(name = "name")
     String name;
@@ -26,10 +26,10 @@ public class Item {
     @Column(name = "is_available")
     Boolean isAvailable;
     @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
     User owner;
     @ManyToOne
-    @JoinColumn(name = "request_id", referencedColumnName = "id")
+    @JoinColumn(name = "request_id", referencedColumnName = "request_id")
     Request request;
 
     public Item(String name, String description, boolean isAvailable) {

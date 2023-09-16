@@ -20,13 +20,13 @@ import java.time.LocalDateTime;
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "request_id")
     long id;
     @Column(name = "description")
     @NotBlank
     String description;
     @ManyToOne
-    @JoinColumn(name = "requestor_id", referencedColumnName = "id")
+    @JoinColumn(name = "requestor_id", referencedColumnName = "user_id")
     User requestor;
     @Column(name = "created")
     LocalDateTime created;
