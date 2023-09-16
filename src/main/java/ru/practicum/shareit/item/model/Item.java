@@ -26,7 +26,7 @@ public class Item {
     @Column(name = "is_available")
     Boolean isAvailable;
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @Column(name = "owner_id")
     User owner;
     @ManyToOne
     @JoinColumn(name = "request_id")
