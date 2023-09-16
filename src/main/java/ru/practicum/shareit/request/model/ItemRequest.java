@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "requests")
-public class Request {
+public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id")
@@ -26,7 +26,7 @@ public class Request {
     @NotBlank
     String description;
     @ManyToOne
-    @JoinColumn(name = "requestor_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "requestor_id")
     User requestor;
     @Column(name = "created")
     LocalDateTime created;
