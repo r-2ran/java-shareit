@@ -25,9 +25,10 @@ public class ItemRequest {
     @Column(name = "description")
     @NotBlank
     String description;
-    @ManyToOne
-    @JoinColumn(name = "requestor_id")
-    User requestor;
+//    @ManyToOne
+//    @JoinColumn(name = "requestor_id")
+//    User requestor;
+    //  неиспользуемый сейчас функционал, из-за него не запускаются тесты
     @Column(name = "created")
     LocalDateTime created;
 }
