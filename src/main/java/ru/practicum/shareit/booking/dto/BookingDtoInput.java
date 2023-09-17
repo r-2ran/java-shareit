@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingDtoInput {
-    @NotNull
     long itemId;
     @NotNull
     @Future
