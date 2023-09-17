@@ -14,6 +14,13 @@ public class UserMapper {
                 user.getEmail());
     }
 
+    public static User toUser(UserDto userDto) {
+        return new User(
+                userDto.getId(),
+                userDto.getName(),
+                userDto.getEmail());
+    }
+
     public static List<UserDto> toUserDtos(List<User> users) {
         List<UserDto> userDtos = new ArrayList<>();
         for (User user : users) {
