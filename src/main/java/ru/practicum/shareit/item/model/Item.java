@@ -26,10 +26,6 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "owner_id")
     User owner;
-//    @ManyToOne
-//    @JoinColumn(name = "request_id")
-//    ItemRequest request;
-    //  неиспользуемый сейчас функционал, из-за него не запускаются тесты
 
     public Item(String name, String description, boolean isAvailable) {
         this.name = name;
