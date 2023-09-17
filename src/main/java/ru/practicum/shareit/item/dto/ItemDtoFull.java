@@ -16,7 +16,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemDtoFull {
 
-    @NotNull
     long id;
     @NotBlank
     String name;
