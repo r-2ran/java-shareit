@@ -1,24 +1,24 @@
-package ru.practicum.shareit.request;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-@ExtendWith(MockitoExtension.class)
+//package ru.practicum.shareit.request;
+//
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.extension.ExtendWith;
+//import org.mockito.Mock;
+//import org.mockito.junit.jupiter.MockitoExtension;
+//import ru.practicum.shareit.item.repository.ItemRepository;
+//import ru.practicum.shareit.request.dto.ItemRequestDto;
+//import ru.practicum.shareit.request.model.ItemRequest;
+//import ru.practicum.shareit.request.repository.ItemRequestRepository;
+//import ru.practicum.shareit.request.service.ItemRequestService;
+//import ru.practicum.shareit.user.model.User;
+//import ru.practicum.shareit.user.repository.UserRepository;
+//
+//import java.time.LocalDateTime;
+//import java.util.Optional;
+//
+//import static org.junit.jupiter.api.Assertions.*;
+//import static org.mockito.Mockito.*;
+//@ExtendWith(MockitoExtension.class)
 //public class RequestServiceTest {
 //    @Mock
 //    private UserRepository userRepository;
