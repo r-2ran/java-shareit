@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -20,14 +21,19 @@ public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id")
-    long id;
+    Long id;
     @Column(name = "description")
     @NotBlank
     String description;
-//    @ManyToOne
-//    @JoinColumn(name = "requestor_id")
-//    User requestor;
-    //  неиспользуемый сейчас функционал, из-за него не запускаются тесты
+    @ManyToOne
+    @JoinColumn(name = "requestor_id")
+    User requestor;
     @Column(name = "created")
     LocalDateTime created;
+
+    public ItemRequest(String description, User requestor, LocalDateTime created) {
+        this.description = description;
+        this.requestor = requestor;
+        this.created = created;
+    }
 }

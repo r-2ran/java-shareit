@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class BookingDto {
     @NotNull
-    long id;
+    Long id;
     @Future
     LocalDateTime start;
     @Future

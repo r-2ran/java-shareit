@@ -16,7 +16,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemDto {
 
-    long id;
+    Long id;
     @NotBlank
     String name;
     @NotBlank
@@ -29,6 +29,7 @@ public class ItemDto {
     BookingForItemDto lastBooking;
     BookingForItemDto nextBooking;
     List<CommentDtoOutput> comments;
+    Long requestId;
 
     public ItemDto(long id, String name, String description, Boolean available, User owner) {
         this.id = id;
@@ -36,5 +37,32 @@ public class ItemDto {
         this.description = description;
         this.available = available;
         this.owner = owner;
+    }
+
+    public ItemDto(long id, String name, String description, Boolean available, User owner, Long requestId) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.owner = owner;
+        this.requestId = requestId;
+    }
+
+    public ItemDto(String name, String description, Boolean available) {
+        this.name = name;
+        this.description = description;
+        this.available = available;
+    }
+
+    public ItemDto(Long id, String name, String description, Boolean available) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+    }
+
+    public ItemDto(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 }

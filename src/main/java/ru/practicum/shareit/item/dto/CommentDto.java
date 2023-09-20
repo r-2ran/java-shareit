@@ -22,4 +22,8 @@ public class CommentDto {
     Item item;
     User author;
     LocalDateTime created;
+
+    public CommentDto(String text) {
+        this.text = text;
+    }
 }

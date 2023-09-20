@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.mapper;
 
+import org.springframework.data.domain.Page;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoInput;
 import ru.practicum.shareit.booking.dto.BookingForItemDto;
@@ -59,5 +60,20 @@ public class BookingMapper {
                 booking.getId(),
                 booking.getBooker().getId()
         );
+    }
+
+    public static List<Booking> fromPage(Page<Booking> bookings) {
+        List<Booking> res = new ArrayList<>();
+        for (Booking booking : bookings) {
+            res.add(new Booking(
+                    booking.getId(),
+                    booking.getStart(),
+                    booking.getEnd(),
+                    booking.getItem(),
+                    booking.getBooker(),
+                    booking.getStatus()
+            ));
+        }
+        return res;
     }
 }

@@ -17,6 +17,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -37,6 +38,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
     @Override
@@ -48,6 +50,10 @@ public class ItemServiceImpl implements ItemService {
             User user = userRepository.findById(userId).get();
             Item item = toItem(itemDto);
             item.setOwner(user);
+            if (itemDto.getRequestId() != null) {
+                item.setRequest(itemRequestRepository.findById(itemDto.getRequestId()).get());
+                return toItemDto(itemRepository.save(item));
+            }
             return toItemDto(itemRepository.save(item));
         }
     }
@@ -194,5 +200,11 @@ public class ItemServiceImpl implements ItemService {
         comment.setAuthor(user);
         comment.setItem(item);
         return commentToOutput(commentRepository.save(comment));
+    }
+
+    @Transactional
+    @Override
+    public void deleteById(long itemId) {
+        itemRepository.deleteById(itemId);
     }
 }

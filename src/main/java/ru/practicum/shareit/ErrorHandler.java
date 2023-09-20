@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.booking.exception.BookingException;
 import ru.practicum.shareit.booking.exception.NoSuchBookingFound;
 import ru.practicum.shareit.item.exception.NoSuchItemFound;
+import ru.practicum.shareit.request.exception.NoSuchRequestFound;
 import ru.practicum.shareit.user.exception.AlreadyExistSuchUser;
 import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.exception.ValidationException;
@@ -59,6 +60,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNoSuchBookingFound(final NoSuchBookingFound e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoSuchRequestFound(final NoSuchRequestFound e) {
         return new ErrorResponse(e.getMessage());
     }
 }

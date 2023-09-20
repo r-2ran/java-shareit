@@ -20,4 +20,6 @@ public interface ItemService {
     List<ItemDto> getAllItemsByUser(long userId);
 
     CommentDtoOutput addComment(long itemId, CommentDto commentDto, long userId);
+
+    void deleteById(long itemId);
 }

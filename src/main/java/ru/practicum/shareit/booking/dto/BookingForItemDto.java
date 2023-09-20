@@ -11,6 +11,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingForItemDto {
-    long id;
+    Long id;
     long bookerId;
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.practicum.shareit.booking.mapper.BookingMapper.fromPage;
 
 
 @Service
@@ -133,7 +136,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingByBooker(long userId, String stateStr)
+    public List<BookingDto> getBookingByBooker(long userId, String stateStr,
+                                               int from, int size)
             throws BookingException, NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
@@ -147,27 +151,33 @@ public class BookingServiceImpl implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
         }
+        if (from < 0) {
+            throw new BookingException("bad page params");
+        }
         switch (state) {
             case ALL:
-                bookings.addAll(bookingRepository.findAllByBookerId(userId, sort));
+                bookings = fromPage(bookingRepository.findAllByBookerId(
+                        userId, PageRequest.of(from / size, size, sort)));
                 break;
             case CURRENT:
-                bookings.addAll(bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsAfter(
-                        userId, date, date, sort));
+                bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsAfter(
+                        userId, date, date, PageRequest.of(from, size, sort))));
                 break;
             case PAST:
-                bookings.addAll(bookingRepository.findAllByBookerIdAndEndIsBefore(userId, date, sort));
+                bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndEndIsBefore(
+                        userId, date, PageRequest.of(from, size, sort))));
                 break;
             case FUTURE:
-                bookings.addAll(bookingRepository.findAllByBookerIdAndStartIsAfter(userId, date, sort));
+                bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndStartIsAfter(
+                        userId, date, PageRequest.of(from, size, sort))));
                 break;
             case WAITING:
-                bookings.addAll(bookingRepository.findAllByBookerIdAndStatusEquals(userId, BookingStatus.WAITING,
-                        sort));
+                bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndStatusEquals(
+                        userId, BookingStatus.WAITING, PageRequest.of(from, size, sort))));
                 break;
             case REJECTED:
-                bookings.addAll(bookingRepository.findAllByBookerIdAndStatusEquals(userId, BookingStatus.REJECTED,
-                        sort));
+                bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndStatusEquals(
+                        userId, BookingStatus.REJECTED, PageRequest.of(from, size, sort))));
                 break;
             default:
                 throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
@@ -177,7 +187,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingByOwner(long userId, String stateStr) throws BookingException {
+    public List<BookingDto> getBookingByOwner(long userId, String stateStr,
+                                              int from, int size) throws BookingException {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
@@ -192,25 +203,28 @@ public class BookingServiceImpl implements BookingService {
         }
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByItemOwnerId(userId, sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerId(
+                        userId, PageRequest.of(from, size, sort)));
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfter(
-                        userId, date, date, sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfter(
+                        userId, date, date, PageRequest.of(from, size, sort)));
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByItemOwnerIdAndEndIsBefore(userId, date, sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndEndIsBefore(
+                        userId, date, PageRequest.of(from, size, sort)));
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartIsAfter(userId, date, sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndStartIsAfter(
+                        userId, date, PageRequest.of(from, size, sort)));
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusEquals(userId, BookingStatus.WAITING,
-                        sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndStatusEquals(
+                        userId, BookingStatus.WAITING, PageRequest.of(from, size, sort)));
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusEquals(userId, BookingStatus.REJECTED,
-                        sort);
+                bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndStatusEquals(
+                        userId, BookingStatus.REJECTED, PageRequest.of(from, size, sort)));
                 break;
             default:
                 throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
