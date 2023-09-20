@@ -2,11 +2,10 @@ package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.controller.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -16,7 +15,6 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -34,7 +32,7 @@ public class BookingControllerTest {
     ObjectMapper mapper;
     @Autowired
     private MockMvc mvc;
-    private final String USER_ID = "X-Sharer-User-Id";
+    static final String USER_ID = "X-Sharer-User-Id";
     LocalDateTime start = LocalDateTime.now();
 
 
@@ -104,8 +102,8 @@ public class BookingControllerTest {
 
     @Test
     public void getAllByBookerTest() throws Exception {
-        when(bookingService.
-                getBookingByBooker(any(Long.class), any(String.class), any(Integer.class), any(Integer.class)))
+        when(bookingService
+                .getBookingByBooker(any(Long.class), any(String.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(new ArrayList<>());
 
         mvc.perform(get("/bookings")
@@ -136,6 +134,5 @@ public class BookingControllerTest {
         verify(bookingService, times(1))
                 .getBookingByOwner(any(Long.class), any(String.class), any(Integer.class), any(Integer.class));
     }
-
 }
 

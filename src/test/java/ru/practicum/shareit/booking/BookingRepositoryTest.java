@@ -42,8 +42,8 @@ public class BookingRepositoryTest {
 
     @Test
     public void findAllTest() {
-        List<ItemRequest> result = itemRequestRepository.
-                findAllByRequestorId(user.getId(), Sort.unsorted());
+        List<ItemRequest> result = itemRequestRepository
+                .findAllByRequestorId(user.getId(), Sort.unsorted());
 
         assertNotNull(result);
         assertFalse(result.isEmpty());

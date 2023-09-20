@@ -35,7 +35,7 @@ public class ItemRequestControllerTest {
             1L,
             "description"
     );
-    private final String USER_ID = "X-Sharer-User-Id";
+    static final String USER_ID = "X-Sharer-User-Id";
 
     @Test
     public void addRequestTest() throws Exception {
@@ -74,8 +74,8 @@ public class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
 
-        verify(itemRequestService, times(1)).
-                getAllByRequestor(any(Long.class));
+        verify(itemRequestService, times(1))
+                .getAllByRequestor(any(Long.class));
     }
 
     @Test
