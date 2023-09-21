@@ -2,12 +2,10 @@ package ru.practicum.shareit.item.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
-@Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query(" select i from Item as i " +
             "where upper(i.name) like upper(concat('%', ?1, '%')) " +
@@ -19,5 +17,4 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findAllByRequestId(long requestId);
 
     Item findByIdAndRequestId(long itemId, long requestId);
-
 }

@@ -201,10 +201,4 @@ public class ItemServiceImpl implements ItemService {
         comment.setItem(item);
         return commentToOutput(commentRepository.save(comment));
     }
-
-    @Transactional
-    @Override
-    public void deleteById(long itemId) {
-        itemRepository.deleteById(itemId);
-    }
 }

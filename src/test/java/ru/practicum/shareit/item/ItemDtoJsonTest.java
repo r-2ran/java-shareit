@@ -12,10 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JsonTest
 public class ItemDtoJsonTest {
     @Autowired
-    private JacksonTester<ItemDto> json;
+    JacksonTester<ItemDto> json;
 
     @Test
-    void toItemDtoTest() throws Exception {
+    void test() throws Exception {
         ItemDto itemDto = new ItemDto(
                 1L,
                 "name",
@@ -27,8 +27,7 @@ public class ItemDtoJsonTest {
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo("name");
-        assertThat(result).extractingJsonPathStringValue("$.description")
-                        .isEqualTo("description");
-        assertThat(result).extractingJsonPathBooleanValue("$.available").isTrue();
+        assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("description");
+        assertThat(result).extractingJsonPathBooleanValue("$.available").isEqualTo(true);
     }
 }

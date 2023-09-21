@@ -74,12 +74,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public void deleteBooking(long bookingId) {
-        bookingRepository.deleteById(bookingId);
-    }
-
-    @Transactional
-    @Override
     public BookingDto updateBooking(long bookingId, long userId, boolean approved) throws
             NoSuchItemFound, NoSuchUserFound, BookingException, NoSuchBookingFound {
         if (bookingRepository.findById(bookingId).isEmpty()) {

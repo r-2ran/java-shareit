@@ -10,8 +10,6 @@ import java.util.List;
 public interface BookingService {
     BookingDto addBooking(BookingDtoInput bookingDto, long userId);
 
-    void deleteBooking(long bookingId);
-
     BookingDto updateBooking(long bookingId, long userId, boolean approve);
 
     BookingDto getBookingById(long bookingId, long userId);

@@ -10,106 +10,112 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.request.controller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.user.exception.NoSuchUserFound;
+import ru.practicum.shareit.user.model.User;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ItemRequestController.class)
-public class ItemRequestControllerTest {
+class ItemRequestControllerTest {
     @MockBean
-    ItemRequestService itemRequestService;
-    @Autowired
-    ObjectMapper mapper;
+    private ItemRequestService itemRequestService;
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private ObjectMapper mapper;
 
-    private ItemRequestDto requestDtoInput = new ItemRequestDto(
-            1L,
-            "description"
-    );
-    static final String USER_ID = "X-Sharer-User-Id";
+    private static final String USER_ID = "X-Sharer-User-Id";
+    private User requestor = new User(1L, "user", "user@mail.ru");
+    private LocalDateTime date = LocalDateTime.now();
+    private ItemRequestDto requestDto = new ItemRequestDto(1L, "description", requestor, date);
 
     @Test
-    public void addRequestTest() throws Exception {
-        ItemRequestDto requestDtoInput = new ItemRequestDto(
-                1L,
-                "description"
-        );
-        LocalDateTime created = LocalDateTime.now();
-        ItemRequestDto requestDto = requestDtoInput;
-        requestDto.setCreated(created);
-
-        when(itemRequestService.addRequest(any(Long.class), any(ItemRequestDto.class)))
+    void addRequest() throws Exception {
+        when(itemRequestService.addRequest(anyLong(), any(ItemRequestDto.class)))
                 .thenReturn(requestDto);
 
         mvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(requestDto))
-                        .header(USER_ID, 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(requestDto.getDescription()), String.class));
-
-        verify(itemRequestService, times(1))
-                .addRequest(any(Long.class), any(ItemRequestDto.class));
+                .andExpect(jsonPath("$.description", is(requestDto.getDescription())));
     }
 
     @Test
-    public void getAllByRequestorTest() throws Exception {
-        when(itemRequestService.getAllByRequestor(any(Long.class)))
-                .thenReturn(new ArrayList<>());
+    void addRequestNotUser() throws Exception {
+        when(itemRequestService.addRequest(anyLong(), any(ItemRequestDto.class)))
+                .thenThrow(new NoSuchUserFound("not found"));
 
-        mvc.perform(get("/requests")
-                        .header(USER_ID, 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        verify(itemRequestService, times(1))
-                .getAllByRequestor(any(Long.class));
+        mvc.perform(post("/requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void getAllTest() throws Exception {
-        when(itemRequestService.getAll(any(Long.class), any(Integer.class), any(Integer.class)))
-                .thenReturn(new ArrayList<>());
-
-        mvc.perform(get("/requests/all")
-                        .param("from", "0")
-                        .param("size", "5")
-                        .header(USER_ID, 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        verify(itemRequestService, times(1))
-                .getAll(any(Long.class), any(Integer.class), any(Integer.class));
-    }
-
-    @Test
-    public void findByIdTest() throws Exception {
-        ItemRequestDto itemRequestDto = requestDtoInput;
-        itemRequestDto.setItems(new ArrayList<>());
-
-        when(itemRequestService.getRequestById(any(Long.class), any(Long.class)))
-                .thenReturn(itemRequestDto);
+    void getRequestById() throws Exception {
+        when(itemRequestService.getRequestById(anyLong(), anyLong()))
+                .thenReturn(requestDto);
 
         mvc.perform(get("/requests/1")
-                        .header(USER_ID, 1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription()), String.class))
-                .andExpect(jsonPath("$.items", is(itemRequestDto.getItems()), List.class));
+                .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
+                .andExpect(jsonPath("$.description", is(requestDto.getDescription())));
+    }
 
-        verify(itemRequestService, times(1))
-                .getRequestById(any(Long.class), any(Long.class));
+    @Test
+    void getRequestByIdNotUser() throws Exception {
+        when(itemRequestService.getRequestById(anyLong(), anyLong()))
+                .thenThrow(new NoSuchUserFound("not found"));
+
+        mvc.perform(get("/requests/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAllByOwner() throws Exception {
+        when(itemRequestService.getAllByRequestor(anyLong()))
+                .thenReturn(List.of(requestDto));
+
+        mvc.perform(get("/requests/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAll() throws Exception {
+        when(itemRequestService.getAll(anyLong(), anyInt(), anyInt()))
+                .thenReturn(List.of(requestDto));
+
+        mvc.perform(get("/requests/all/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }

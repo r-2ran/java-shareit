@@ -25,11 +25,6 @@ public class BookingController {
         return bookingService.addBooking(bookingDtoInput, userId);
     }
 
-    @DeleteMapping("/{bookingId}")
-    void deleteBooking(@PathVariable long bookingId) {
-        bookingService.deleteBooking(bookingId);
-    }
-
     @GetMapping("/{bookingId}")
     BookingDto getBookingById(@PathVariable long bookingId,
                               @RequestHeader(USER_ID) long userId) {
