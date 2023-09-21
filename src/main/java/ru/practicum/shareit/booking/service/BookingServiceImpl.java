@@ -24,6 +24,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static ru.practicum.shareit.booking.mapper.BookingMapper.fromPage;
 
@@ -48,11 +49,11 @@ public class BookingServiceImpl implements BookingService {
                     bookingDtoInput.getItemId()));
         }
         Item item = itemRepository.findById(bookingDtoInput.getItemId()).get();
-        if (booker.getId() != userId) {
+        if (!Objects.equals(booker.getId(), userId)) {
             throw new NoSuchUserFound(String.format("no owner user id =%d for item id = %d", userId,
                     bookingDtoInput.getItemId()));
         }
-        if (booker.getId() == item.getOwner().getId()) {
+        if (booker.getId().equals(item.getOwner().getId())) {
             throw new NoSuchUserFound(String.format("owner id = %d cannot be booker", userId));
         }
         if (!item.getIsAvailable()) {
@@ -83,11 +84,11 @@ public class BookingServiceImpl implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
-        if (userRepository.findById(userId).get().getId() != userId) {
+        if (!Objects.equals(userRepository.findById(userId).get().getId(), userId)) {
             throw new NoSuchUserFound(String.format("no true user id =%d for item id = %d", userId,
                     booking.getItem().getId()));
         }
-        if (itemRepository.findById(booking.getItem().getId()).get().getOwner().getId() != userId) {
+        if (!Objects.equals(itemRepository.findById(booking.getItem().getId()).get().getOwner().getId(), userId)) {
             throw new NoSuchBookingFound(String.format("user id = %d have not access to approving",
                     userId));
         }
@@ -114,13 +115,13 @@ public class BookingServiceImpl implements BookingService {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
         User user = userRepository.findById(userId).get();
-        if (bookingRepository.findById(bookingId).get().getBooker().getId() != userId
-                && userRepository.findById(userId).get().getId() != userId) {
+        if (!Objects.equals(bookingRepository.findById(bookingId).get().getBooker().getId(), userId)
+                && !Objects.equals(userRepository.findById(userId).get().getId(), userId)) {
             throw new NoSuchUserFound(String.format("user id = %d cannot have access" +
                     " to booking id = %d info", userId, booking.getItem().getId()));
         }
-        if (booking.getBooker().getId() != user.getId()
-                && booking.getItem().getOwner().getId() != user.getId()) {
+        if (!Objects.equals(booking.getBooker().getId(), user.getId())
+                && !Objects.equals(booking.getItem().getOwner().getId(), user.getId())) {
             throw new NoSuchBookingFound(String.format("no booking id = %d and user id = %d",
                     bookingId, userId));
         }
