@@ -28,7 +28,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRepository itemRepository;
 
     @Override
-    public ItemRequestDto addRequest(long userId, ItemRequestDto requestDto) {
+    public ItemRequestDto addRequest(Long userId, ItemRequestDto requestDto) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
@@ -41,7 +41,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestDto getRequestById(long requestId, long userId) {
+    public ItemRequestDto getRequestById(Long requestId, Long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
@@ -60,7 +60,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAllByRequestor(long userId) throws NoSuchUserFound {
+    public List<ItemRequestDto> getAllByRequestor(Long userId) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchRequestFound(String.format("no user id = %d", userId));
         }
@@ -83,7 +83,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAll(long userId, int from, int size) {
+    public List<ItemRequestDto> getAll(Long userId, int from, int size) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchRequestFound(String.format("no user id = %d", userId));
         }

@@ -62,7 +62,7 @@ class BookingServiceImplTest {
 
         final NoSuchUserFound noSuchUserFound = Assertions.assertThrows(
                 NoSuchUserFound.class,
-                () -> bookingService.addBooking(input, 99));
+                () -> bookingService.addBooking(input, 99L));
         assertEquals("no such user", noSuchUserFound.getMessage());
 
     }

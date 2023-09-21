@@ -18,24 +18,24 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    public ItemRequestDto addRequest(@RequestHeader(USER_ID) long userId,
+    public ItemRequestDto addRequest(@RequestHeader(USER_ID) Long userId,
                                      @Valid @RequestBody ItemRequestDto itemRequestDto) {
         return itemRequestService.addRequest(userId, itemRequestDto);
     }
 
     @GetMapping("/{requestId}")
-    public ItemRequestDto getRequestById(@RequestHeader(USER_ID) long userId,
-                                         @PathVariable long requestId) {
+    public ItemRequestDto getRequestById(@RequestHeader(USER_ID) Long userId,
+                                         @PathVariable Long requestId) {
         return itemRequestService.getRequestById(requestId, userId);
     }
 
     @GetMapping
-    public List<ItemRequestDto> getAllByOwner(@RequestHeader(USER_ID) long userId) {
+    public List<ItemRequestDto> getAllByOwner(@RequestHeader(USER_ID) Long userId) {
         return itemRequestService.getAllByRequestor(userId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAll(@RequestHeader(USER_ID) long userId,
+    public List<ItemRequestDto> getAll(@RequestHeader(USER_ID) Long userId,
                                        @RequestParam(defaultValue = "0") int from,
                                        @RequestParam(defaultValue = "10") int size
     ) {

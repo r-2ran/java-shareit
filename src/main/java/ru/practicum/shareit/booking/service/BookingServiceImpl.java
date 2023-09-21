@@ -37,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto addBooking(BookingDtoInput bookingDtoInput, long userId) throws
+    public BookingDto addBooking(BookingDtoInput bookingDtoInput, Long userId) throws
             NoSuchItemFound, NoSuchUserFound, BookingException {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto updateBooking(long bookingId, long userId, boolean approved) throws
+    public BookingDto updateBooking(Long bookingId, Long userId, boolean approved) throws
             NoSuchItemFound, NoSuchUserFound, BookingException, NoSuchBookingFound {
         if (bookingRepository.findById(bookingId).isEmpty()) {
             throw new NoSuchBookingFound(String.format("no booking id = %d", bookingId));
@@ -104,7 +104,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public BookingDto getBookingById(long bookingId, long userId) throws NoSuchBookingFound,
+    public BookingDto getBookingById(Long bookingId, Long userId) throws NoSuchBookingFound,
             NoSuchUserFound {
         if (bookingRepository.findById(bookingId).isEmpty()) {
             throw new NoSuchBookingFound(String.format("no booking id = %d", bookingId));
@@ -130,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingByBooker(long userId, String stateStr,
+    public List<BookingDto> getBookingByBooker(Long userId, String stateStr,
                                                int from, int size)
             throws BookingException, NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
@@ -181,7 +181,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingByOwner(long userId, String stateStr,
+    public List<BookingDto> getBookingByOwner(Long userId, String stateStr,
                                               int from, int size) throws BookingException {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));

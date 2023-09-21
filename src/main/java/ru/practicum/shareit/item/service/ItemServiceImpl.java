@@ -42,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto addItem(long userId, ItemDto itemDto) throws NoSuchUserFound {
+    public ItemDto addItem(Long userId, ItemDto itemDto) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id = %d, " +
                     "so cannot add item,", userId));
@@ -60,7 +60,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto updateItem(long itemId, ItemDto itemDto, long userId)
+    public ItemDto updateItem(Long itemId, ItemDto itemDto, Long userId)
             throws NoSuchUserFound, NoSuchItemFound {
         if (itemRepository.findById(itemId).isEmpty()) {
             throw new NoSuchItemFound(String.format("no such item id = %d", itemId));
@@ -83,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public ItemDto getItemById(long itemId, long userId) throws NoSuchUserFound,
+    public ItemDto getItemById(Long itemId, Long userId) throws NoSuchUserFound,
             NoSuchItemFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
@@ -133,7 +133,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public List<ItemDto> searchItem(String text, long userId) {
+    public List<ItemDto> searchItem(String text, Long userId) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
@@ -142,7 +142,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> getAllItemsByUser(long userId) throws NoSuchUserFound {
+    public List<ItemDto> getAllItemsByUser(Long userId) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
@@ -177,7 +177,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public CommentDtoOutput addComment(long itemId, CommentDto commentDto, long userId)
+    public CommentDtoOutput addComment(Long itemId, CommentDto commentDto, Long userId)
             throws NoSuchUserFound, NoSuchItemFound, BookingException {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));

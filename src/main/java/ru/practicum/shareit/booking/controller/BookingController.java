@@ -21,25 +21,25 @@ public class BookingController {
 
     @PostMapping
     BookingDto addBooking(@Valid @RequestBody BookingDtoInput bookingDtoInput,
-                          @RequestHeader(USER_ID) long userId) {
+                          @RequestHeader(USER_ID) Long userId) {
         return bookingService.addBooking(bookingDtoInput, userId);
     }
 
     @GetMapping("/{bookingId}")
-    BookingDto getBookingById(@PathVariable long bookingId,
-                              @RequestHeader(USER_ID) long userId) {
+    BookingDto getBookingById(@PathVariable Long bookingId,
+                              @RequestHeader(USER_ID) Long userId) {
         return bookingService.getBookingById(bookingId, userId);
     }
 
     @PatchMapping("/{bookingId}")
-    BookingDto updateBooking(@PathVariable long bookingId,
-                             @RequestHeader(USER_ID) long userId,
+    BookingDto updateBooking(@PathVariable Long bookingId,
+                             @RequestHeader(USER_ID) Long userId,
                              @RequestParam boolean approved) {
         return bookingService.updateBooking(bookingId, userId, approved);
     }
 
     @GetMapping
-    List<BookingDto> getBookingsByBooker(@RequestHeader(USER_ID) long userId,
+    List<BookingDto> getBookingsByBooker(@RequestHeader(USER_ID) Long userId,
                                          @RequestParam(name = "state",
                                                  required = false, defaultValue = "ALL") String state,
                                          @RequestParam(defaultValue = "0") int from,
@@ -48,7 +48,7 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    List<BookingDto> getBookingsByOwner(@RequestHeader(USER_ID) long userId,
+    List<BookingDto> getBookingsByOwner(@RequestHeader(USER_ID) Long userId,
                                         @RequestParam(name = "state",
                                                 required = false,
                                                 defaultValue = "ALL") String state,
