@@ -29,6 +29,7 @@ import static ru.practicum.shareit.item.mapper.CommentMapper.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -93,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
         }
         ItemDto item = toItemDto(itemRepository.findById(itemId).get());
         item.setComments(CommentMapper.toCommentDtosList(commentRepository.findAll()));
-        if (itemRepository.findById(itemId).get().getOwner().getId() == userId) {
+        if (Objects.equals(itemRepository.findById(itemId).get().getOwner().getId(), userId)) {
             LocalDateTime time = LocalDateTime.now();
             Sort sort = Sort.by(Sort.Direction.DESC, "start");
             Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
@@ -148,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
         }
         List<ItemDto> items = toItemDtoList(itemRepository.findAllByOwnerId(userId));
         for (ItemDto itemDto : items) {
-            if (itemRepository.findById(itemDto.getId()).get().getOwner().getId() == userId
+            if (Objects.equals(itemRepository.findById(itemDto.getId()).get().getOwner().getId(), userId)
                     && !bookingRepository.findAllByItemId(itemDto.getId(), Sort.unsorted()).isEmpty()) {
                 LocalDateTime time = LocalDateTime.now();
                 Sort sort = Sort.by(Sort.Direction.DESC, "start");
