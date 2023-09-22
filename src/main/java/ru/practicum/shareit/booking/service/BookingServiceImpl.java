@@ -125,7 +125,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
         }
         if (from < 0) {
-            throw new BookingException("bad page params");
+            throw new BookingException(String.format("bad page parameters, from cannot be = %d", from));
         }
         switch (state) {
             case ALL:

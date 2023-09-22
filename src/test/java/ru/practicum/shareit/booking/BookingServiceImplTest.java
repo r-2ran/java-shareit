@@ -445,7 +445,7 @@ class BookingServiceImplTest {
         final BookingException e = Assertions.assertThrows(
                 BookingException.class,
                 () -> bookingService.getBookingByBooker(1L, "ALL", -5, 5));
-        assertEquals("bad page params", e.getMessage());
+        assertEquals("bad page parameters, from cannot be = -5", e.getMessage());
     }
 
     @Test
