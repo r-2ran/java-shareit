@@ -103,4 +103,10 @@ class UserServiceImplTest {
                 .thenReturn(user);
         assertEquals(userDto.getId(), userService.updateUser(1L, userDto).getId());
     }
+
+    @Test
+    void deleteUser() {
+        verify(userRepository, times(1))
+                .deleteById(anyLong());
+    }
 }

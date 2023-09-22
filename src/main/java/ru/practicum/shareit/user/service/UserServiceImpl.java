@@ -50,4 +50,10 @@ public class UserServiceImpl implements UserService {
         }
         return UserMapper.toUserDto(userRepository.save(inDB));
     }
+
+    @Transactional
+    @Override
+    public void deleteUser(long userId) {
+        userRepository.deleteById(userId);
+    }
 }
