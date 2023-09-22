@@ -34,12 +34,6 @@ public class UserController {
         return userService.addUser(userDto);
     }
 
-    @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Long userId) {
-        log.debug("deleted user: {}", userService.getUserById(userId));
-        userService.deleteUser(userId);
-    }
-
     @PatchMapping("/{userId}")
     public UserDto updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
         log.debug("updated user: {}", userDto);

@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.request.controller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.exception.NoSuchRequestFound;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
@@ -78,6 +79,19 @@ class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())));
+    }
+
+    @Test
+    void getRequestByIdNot() throws Exception {
+        when(itemRequestService.getRequestById(anyLong(), anyLong()))
+                .thenThrow(new NoSuchRequestFound("not found"));
+
+        mvc.perform(get("/requests/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test

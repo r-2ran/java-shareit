@@ -52,12 +52,12 @@ class UserServiceImplTest {
     @Test
     void getUserByIdNot() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         final NoSuchUserFound e = Assertions.assertThrows(
                 NoSuchUserFound.class,
                 () -> userService.getUserById(99L));
-        assertEquals("not found", e.getMessage());
+        assertEquals("no user id = 99", e.getMessage());
 
     }
 
@@ -93,5 +93,14 @@ class UserServiceImplTest {
         UserDto updatedUserDto = new UserDto(1L, "new name", "user@mail.ru");
 
         assertEquals(updatedUserDto.getId(), userService.updateUser(1L, input).getId());
+    }
+
+    @Test
+    void updateUserNothing() {
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.ofNullable(user));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        assertEquals(userDto.getId(), userService.updateUser(1L, userDto).getId());
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.CommentDtoOutput;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.exception.NoSuchItemFound;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.time.LocalDateTime;
@@ -87,6 +88,19 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
                 .andExpect(jsonPath("$.description", is(itemDto.getDescription())))
                 .andExpect(jsonPath("$.available", is(itemDto.getAvailable())));
+    }
+
+    @Test
+    void getItemByIdNotFound() throws Exception {
+        when(itemService.getItemById(anyLong(), anyLong()))
+                .thenThrow(new NoSuchItemFound("not found"));
+
+        mvc.perform(get("/items/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(USER_ID, 1)
+                        .content(mapper.writeValueAsString(itemDto))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test

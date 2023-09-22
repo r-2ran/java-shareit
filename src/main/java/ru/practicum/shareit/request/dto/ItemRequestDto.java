@@ -36,9 +36,4 @@ public class ItemRequestDto {
         this.description = description;
         this.created = created;
     }
-
-    public ItemRequestDto(long id, String description) {
-        this.id = id;
-        this.description = description;
-    }
 }

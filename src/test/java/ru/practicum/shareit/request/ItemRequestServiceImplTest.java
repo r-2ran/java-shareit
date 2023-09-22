@@ -10,10 +10,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import ru.practicum.shareit.booking.exception.NoSuchBookingFound;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.exception.NoSuchRequestFound;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
@@ -62,7 +62,7 @@ class ItemRequestServiceImplTest {
     @Test
     void addRequestWrongUser() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         when(requestRepository.save(any(ItemRequest.class)))
                 .thenReturn(request);
@@ -71,7 +71,7 @@ class ItemRequestServiceImplTest {
                 NoSuchUserFound.class,
                 () -> itemRequestService.addRequest(99L, requestDto));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
 
     @Test
@@ -94,7 +94,7 @@ class ItemRequestServiceImplTest {
     @Test
     void getRequestByIdNoUser() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         when(requestRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(request));
@@ -107,9 +107,9 @@ class ItemRequestServiceImplTest {
 
         final NoSuchUserFound exception = Assertions.assertThrows(
                 NoSuchUserFound.class,
-                () -> itemRequestService.addRequest(99L, requestDto));
+                () -> itemRequestService.getRequestById(99L, 99L));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
 
     @Test
@@ -118,7 +118,7 @@ class ItemRequestServiceImplTest {
                 .thenReturn(Optional.ofNullable(requestor));
 
         when(requestRepository.findById(anyLong()))
-                .thenThrow(new NoSuchBookingFound("not found"));
+                .thenReturn(Optional.empty());
 
         when(itemRepository.findAllByRequestId(anyLong()))
                 .thenReturn(List.of(item));
@@ -126,11 +126,11 @@ class ItemRequestServiceImplTest {
         when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
                 .thenReturn(item);
 
-        final NoSuchBookingFound exception = Assertions.assertThrows(
-                NoSuchBookingFound.class,
+        final NoSuchRequestFound exception = Assertions.assertThrows(
+                NoSuchRequestFound.class,
                 () -> itemRequestService.getRequestById(99L, 1L));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no request id = 99", exception.getMessage());
     }
 
     @Test
@@ -154,7 +154,7 @@ class ItemRequestServiceImplTest {
     @Test
     void getAllByRequestorNotUser() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         when(requestRepository.findAllByRequestorId(anyLong(), any(Sort.class)))
                 .thenReturn(List.of(request));
@@ -169,7 +169,7 @@ class ItemRequestServiceImplTest {
                 NoSuchUserFound.class,
                 () -> itemRequestService.getAllByRequestor(99L));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
 
     @Test
@@ -186,5 +186,51 @@ class ItemRequestServiceImplTest {
         when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
                 .thenReturn(item);
         assertTrue(itemRequestService.getAll(owner.getId(), 0, 5).isEmpty());
+    }
+
+    @Test
+    void getAllWithItems() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+
+        when(requestRepository.findAllByRequestorIdNot(1L, Pageable.unpaged()))
+                .thenReturn(List.of(request));
+
+        when(requestRepository.findAllByRequestorIdNot(anyLong(), any()))
+                .thenReturn(List.of(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(List.of(item));
+
+        when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
+                .thenReturn(item);
+
+        assertFalse(itemRequestService.getAll(owner.getId(), 0, 5).isEmpty());
+    }
+
+    @Test
+    void getAllNoUser() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        when(requestRepository.findAllByRequestorIdNot(1L, Pageable.unpaged()))
+                .thenReturn(List.of(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(List.of(item));
+
+        when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
+                .thenReturn(item);
+        when(requestRepository.findAllByRequestorIdNot(anyLong(), any()))
+                .thenReturn(List.of(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(List.of(item));
+
+        final NoSuchUserFound exception = Assertions.assertThrows(
+                NoSuchUserFound.class,
+                () -> itemRequestService.getAll(99L, 0, 5));
+
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
 }

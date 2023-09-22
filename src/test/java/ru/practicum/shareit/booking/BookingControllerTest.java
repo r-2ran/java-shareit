@@ -10,9 +10,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.controller.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoInput;
+import ru.practicum.shareit.booking.exception.BookingException;
+import ru.practicum.shareit.booking.exception.NoSuchBookingFound;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 
 
@@ -57,6 +60,19 @@ class BookingControllerTest {
     }
 
     @Test
+    void addBookingWrong() throws Exception {
+        when(bookingService.addBooking(any(BookingDtoInput.class), anyLong()))
+                .thenThrow(new BookingException("error"));
+
+        mvc.perform(post("/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getBookingById() throws Exception {
         when(bookingService.getBookingById(anyLong(), anyLong()))
                 .thenReturn(bookingDto);
@@ -68,6 +84,32 @@ class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class));
+    }
+
+    @Test
+    void getBookingByIdNotFound() throws Exception {
+        when(bookingService.getBookingById(anyLong(), anyLong()))
+                .thenThrow(new NoSuchBookingFound("not found"));
+
+        mvc.perform(get("/bookings/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getBookingByIdNotFoundUser() throws Exception {
+        when(bookingService.getBookingById(anyLong(), anyLong()))
+                .thenThrow(new NoSuchUserFound("not found"));
+
+        mvc.perform(get("/bookings/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .header(USER_ID, 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test

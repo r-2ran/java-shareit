@@ -49,10 +49,6 @@ public class BookingServiceImpl implements BookingService {
                     bookingDtoInput.getItemId()));
         }
         Item item = itemRepository.findById(bookingDtoInput.getItemId()).get();
-        if (!Objects.equals(booker.getId(), userId)) {
-            throw new NoSuchUserFound(String.format("no owner user id =%d for item id = %d", userId,
-                    bookingDtoInput.getItemId()));
-        }
         if (booker.getId().equals(item.getOwner().getId())) {
             throw new NoSuchUserFound(String.format("owner id = %d cannot be booker", userId));
         }
@@ -84,10 +80,6 @@ public class BookingServiceImpl implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
-        if (!Objects.equals(userRepository.findById(userId).get().getId(), userId)) {
-            throw new NoSuchUserFound(String.format("no true user id =%d for item id = %d", userId,
-                    booking.getItem().getId()));
-        }
         if (!Objects.equals(itemRepository.findById(booking.getItem().getId()).get().getOwner().getId(), userId)) {
             throw new NoSuchBookingFound(String.format("user id = %d have not access to approving",
                     userId));
@@ -115,17 +107,11 @@ public class BookingServiceImpl implements BookingService {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
         User user = userRepository.findById(userId).get();
-        if (!Objects.equals(bookingRepository.findById(bookingId).get().getBooker().getId(), userId)
-                && !Objects.equals(userRepository.findById(userId).get().getId(), userId)) {
-            throw new NoSuchUserFound(String.format("user id = %d cannot have access" +
-                    " to booking id = %d info", userId, booking.getItem().getId()));
-        }
         if (!Objects.equals(booking.getBooker().getId(), user.getId())
                 && !Objects.equals(booking.getItem().getOwner().getId(), user.getId())) {
             throw new NoSuchBookingFound(String.format("no booking id = %d and user id = %d",
                     bookingId, userId));
         }
-
         return BookingMapper.toBookingDto(bookingRepository.findById(bookingId).get());
     }
 
@@ -174,8 +160,6 @@ public class BookingServiceImpl implements BookingService {
                 bookings.addAll(fromPage(bookingRepository.findAllByBookerIdAndStatusEquals(
                         userId, BookingStatus.REJECTED, PageRequest.of(from, size, sort))));
                 break;
-            default:
-                throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.toBookingDtoList(bookings);
     }
@@ -187,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id =%d", userId));
         }
-        List<Booking> bookings;
+        List<Booking> bookings = new ArrayList<>();
         LocalDateTime date = LocalDateTime.now();
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
         State state;
@@ -221,8 +205,6 @@ public class BookingServiceImpl implements BookingService {
                 bookings = fromPage(bookingRepository.findAllByItemOwnerIdAndStatusEquals(
                         userId, BookingStatus.REJECTED, PageRequest.of(from, size, sort)));
                 break;
-            default:
-                throw new BookingException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.toBookingDtoList(bookings);
     }

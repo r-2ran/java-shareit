@@ -46,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto addItem(Long userId, ItemDto itemDto) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no such user id = %d, " +
-                    "so cannot add item,", userId));
+                    "so cannot add item", userId));
         } else {
             User user = userRepository.findById(userId).get();
             Item item = toItem(itemDto);

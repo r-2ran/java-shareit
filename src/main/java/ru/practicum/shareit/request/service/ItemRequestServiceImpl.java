@@ -62,7 +62,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getAllByRequestor(Long userId) throws NoSuchUserFound {
         if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchRequestFound(String.format("no user id = %d", userId));
+            throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
         Sort sort = Sort.by(Sort.Direction.ASC, "created");
         List<ItemRequestDto> requestDtos = toItemRequestDtoList(requestRepository.findAllByRequestorId(userId, sort));
@@ -85,7 +85,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getAll(Long userId, int from, int size) {
         if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchRequestFound(String.format("no user id = %d", userId));
+            throw new NoSuchUserFound(String.format("no user id = %d", userId));
         }
         Sort sort = Sort.by(Sort.Direction.ASC, "created");
         List<ItemRequestDto> requestDtos = fromPage(requestRepository.findAllByRequestorIdNot(userId,

@@ -40,12 +40,6 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void deleteUser(long userId) {
-        userRepository.deleteById(userId);
-    }
-
-    @Transactional
-    @Override
     public UserDto updateUser(long userId, UserDto userDto) {
         User inDB = UserMapper.toUser(getUserById(userId));
         if (userDto.getName() != null) {

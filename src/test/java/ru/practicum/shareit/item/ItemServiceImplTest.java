@@ -9,7 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.exception.BookingException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -61,12 +63,16 @@ class ItemServiceImplTest {
 
     private Item item = new Item(1L, "item", "description", true, owner,
             request);
+    private Item itemNoRequest = new Item(1L, "item", "description", true, owner,
+            null);
     private ItemDto itemDto = new ItemDto(1L, "item", "description", true, owner,
             request.getId());
     private Booking booking = new Booking(1L, date.minusDays(10), date.minusDays(5), item,
             booker, BookingStatus.APPROVED);
     private Comment comment = new Comment(1L, "text", item, booker, date);
     private CommentDto commentDto = new CommentDto("text");
+    Booking lastBooking = new Booking();
+    Booking nextBooking = new Booking();
 
     @Test
     void addItem() {
@@ -81,9 +87,21 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addItemNoRequest() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+        when(itemRequestRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(request));
+        when(itemRepository.save(any(Item.class)))
+                .thenReturn(itemNoRequest);
+
+        assertEquals(itemService.addItem(owner.getId(), itemDto).getId(), itemDto.getId());
+    }
+
+    @Test
     void addItemNotUser() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         when(itemRequestRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(request));
@@ -95,7 +113,7 @@ class ItemServiceImplTest {
                 NoSuchUserFound.class,
                 () -> itemService.addItem(99L, itemDto));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no such user id = 99, so cannot add item", exception.getMessage());
     }
 
     @Test
@@ -108,6 +126,7 @@ class ItemServiceImplTest {
         Item updatedItem = item;
         updatedItem.setName("new name");
         updatedItem.setDescription("new description");
+        updatedItem.setIsAvailable(Boolean.FALSE);
         when(itemRepository.save(any(Item.class)))
                 .thenReturn(updatedItem);
 
@@ -127,7 +146,7 @@ class ItemServiceImplTest {
                 .thenReturn(Optional.ofNullable(item));
 
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
+                .thenReturn(Optional.empty());
 
         ItemDto updated = new ItemDto("new name", "new description");
         Item updatedItem = item;
@@ -138,27 +157,8 @@ class ItemServiceImplTest {
                 NoSuchUserFound.class,
                 () -> itemService.updateItem(1L, updated, 99L));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no such user id = 99", exception.getMessage());
     }
-
-//    @Test
-//    void updateItemNotItem() {
-//        when(itemRepository.findById(anyLong()))
-//                .thenThrow(new NoSuchItemFound("not found"));
-//
-//        when(userRepository.findById(anyLong()))
-//                .thenReturn(Optional.ofNullable(owner));
-//
-//        ItemDto updated = new ItemDto("new name", "new description");
-//        Item updatedItem = item;
-//        updatedItem.setName("new name");
-//        updatedItem.setDescription("new description");
-//
-//        final NoSuchItemFound exception = Assertions.assertThrows(
-//                NoSuchItemFound.class,
-//                () -> itemService.updateItem(99L, updated, 1L));
-//        Assertions.assertEquals("not found", exception.getMessage());
-//    }
 
     @Test
     void getItemById() {
@@ -173,10 +173,26 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void getItemByIdOwner() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        when(bookingRepository.findAllByItemIdAndStartIsBefore(anyLong(), any(LocalDateTime.class), any(Sort.class)))
+                .thenReturn(List.of(lastBooking));
+        when(bookingRepository.findAllByItemIdAndStartIsAfter(anyLong(), any(LocalDateTime.class), any(Sort.class)))
+                .thenReturn(List.of(nextBooking));
+
+        assertEquals(itemService.getItemById(1L, 1L).getId(), 1);
+
+    }
+
+    @Test
     void getItemByIdNotUser() {
         when(userRepository.findById(anyLong()))
-                .thenThrow(new NoSuchUserFound("not found"));
-
+                .thenReturn(Optional.empty());
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
 
@@ -184,23 +200,8 @@ class ItemServiceImplTest {
                 NoSuchUserFound.class,
                 () -> itemService.getItemById(1L, 99L));
 
-        Assertions.assertEquals("not found", exception.getMessage());
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
-
-//    @Test
-//    void getItemByIdNotItem() {
-//        when(userRepository.findById(anyLong()))
-//                .thenReturn(Optional.ofNullable(requestor));
-//
-//        when(itemRepository.findById(anyLong()))
-//                .thenThrow(new NoSuchItemFound("not found"));
-//
-//        final NoSuchItemFound exception = Assertions.assertThrows(
-//                NoSuchItemFound.class,
-//                () -> itemService.getItemById(99L, requestor.getId()));
-//
-//        Assertions.assertEquals("not found", exception.getMessage());
-//    }
 
     @Test
     void searchItem() {
@@ -212,10 +213,10 @@ class ItemServiceImplTest {
 
     @Test
     void searchBlankTextItem() {
-        when(itemRepository.search(anyString()))
+        when(itemRepository.search(""))
                 .thenReturn(new ArrayList<>());
 
-        assertEquals(itemService.searchItem("desc", requestor.getId()).size(), 0);
+        assertEquals(itemService.searchItem("", requestor.getId()).size(), 0);
     }
 
 
@@ -229,6 +230,41 @@ class ItemServiceImplTest {
                 .thenReturn(Optional.ofNullable(item));
 
         assertEquals(List.of(item).size(), itemService.getAllItemsByUser(anyLong()).size());
+    }
+
+    @Test
+    void getAllItemsByOwner() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+        when(itemRepository.findAllByOwnerId(anyLong()))
+                .thenReturn(List.of(item));
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        when(bookingRepository.findAllByItemIdAndStartIsBefore(anyLong(), any(LocalDateTime.class), any(Sort.class)))
+                .thenReturn(List.of(lastBooking));
+        when(bookingRepository.findAllByItemIdAndStartIsAfter(anyLong(), any(LocalDateTime.class), any(Sort.class)))
+                .thenReturn(List.of(nextBooking));
+
+        assertEquals(List.of(item).size(), itemService.getAllItemsByUser(anyLong()).size());
+    }
+
+
+    @Test
+    void getAllItemsByUserNotFound() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        when(itemRepository.findAllByOwnerId(anyLong()))
+                .thenReturn(List.of(item));
+
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        final NoSuchUserFound exception = Assertions.assertThrows(
+                NoSuchUserFound.class,
+                () -> itemService.getAllItemsByUser(99L));
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
     }
 
     @Test
@@ -248,5 +284,41 @@ class ItemServiceImplTest {
 
         assertEquals(comment.getId(), itemService.addComment(
                 item.getId(), commentDto, booker.getId()).getId());
+    }
+
+    @Test
+    void addCommentNotUser() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        when(bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusEquals(anyLong(),
+                any(LocalDateTime.class), any(BookingStatus.class)))
+                .thenReturn(List.of(booking));
+
+        final NoSuchUserFound exception = Assertions.assertThrows(
+                NoSuchUserFound.class,
+                () -> itemService.addComment(1L, commentDto, 99L));
+        Assertions.assertEquals("no user id = 99", exception.getMessage());
+    }
+
+    @Test
+    void addCommentNotItemRented() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(booker));
+
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        when(bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusEquals(anyLong(),
+                any(LocalDateTime.class), any(BookingStatus.class)))
+                .thenReturn(new ArrayList<>());
+
+        final BookingException exception = Assertions.assertThrows(
+                BookingException.class,
+                () -> itemService.addComment(1L, commentDto, 99L));
+        Assertions.assertEquals("item id = 1 by user id = 99 has not been rented", exception.getMessage());
     }
 }
