@@ -26,14 +26,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository requestRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final Sort sort = Sort.by(Sort.Direction.ASC, "created");
 
     @Override
     public ItemRequestDto addRequest(Long userId, ItemRequestDto requestDto) {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
         ItemRequest request = toRequest(requestDto);
-        User user = userRepository.findById(userId).get();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchUserFound(String.format("no user id = %d", userId)));
         request.setRequestor(user);
         LocalDateTime created = LocalDateTime.now();
         request.setCreated(created);
@@ -42,13 +41,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getRequestById(Long requestId, Long userId) {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
-        if (requestRepository.findById(requestId).isEmpty()) {
-            throw new NoSuchRequestFound(String.format("no request id = %d", requestId));
-        }
-        ItemRequestDto requestDto = toRequestDto(requestRepository.findById(requestId).get());
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no user id = %d", userId)));
+        ItemRequest request = requestRepository.findById(requestId).orElseThrow(() ->
+                new NoSuchRequestFound(String.format("no request id = %d", requestId)));
+        ItemRequestDto requestDto = toRequestDto(request);
         requestDto.setItems(toItemDtoList(itemRepository.findAllByRequestId(requestDto.getId())));
         for (ItemDto itemDto : requestDto.getItems()) {
             if (itemDto.getRequestId() != null) {
@@ -61,13 +58,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllByRequestor(Long userId) throws NoSuchUserFound {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
-        Sort sort = Sort.by(Sort.Direction.ASC, "created");
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no user id = %d", userId)));
         List<ItemRequestDto> requestDtos = toItemRequestDtoList(requestRepository.findAllByRequestorId(userId, sort));
-
-
         for (ItemRequestDto requestDto : requestDtos) {
             requestDto.setItems(toItemDtoList(itemRepository.findAllByRequestId(requestDto.getId())));
             for (ItemDto itemDto : requestDto.getItems()) {
@@ -77,17 +70,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 }
             }
         }
-
-
         return requestDtos;
     }
 
     @Override
     public List<ItemRequestDto> getAll(Long userId, int from, int size) {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
-        Sort sort = Sort.by(Sort.Direction.ASC, "created");
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no user id = %d", userId)));
         List<ItemRequestDto> requestDtos = fromPage(requestRepository.findAllByRequestorIdNot(userId,
                 PageRequest.of(from, size, sort)));
         for (ItemRequestDto requestDto : requestDtos) {

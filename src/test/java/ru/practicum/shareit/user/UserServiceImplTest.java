@@ -97,16 +97,18 @@ class UserServiceImplTest {
 
     @Test
     void updateUserNothing() {
+        UserDto nothinnd = new UserDto();
         when(userRepository.findById(1L))
                 .thenReturn(Optional.ofNullable(user));
         when(userRepository.save(any(User.class)))
                 .thenReturn(user);
-        assertEquals(userDto.getId(), userService.updateUser(1L, userDto).getId());
+        assertEquals(userDto.getId(), userService.updateUser(1L, nothinnd).getId());
     }
 
     @Test
     void deleteUser() {
         userRepository.deleteById(anyLong());
+        assertTrue(userRepository.findById(1L).isEmpty());
         verify(userRepository, times(1))
                 .deleteById(anyLong());
     }

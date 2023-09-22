@@ -185,7 +185,8 @@ class BookingRepositoryTest {
     @Test
     void findAllByItemIdAndEndIsAfter() {
         List<Booking> bookings = bookingRepository
-                .findAllByItemIdAndEndIsAfter(item.getId(), date.plusDays(10), Sort.unsorted());
+                .findAllByItemIdAndEndIsAfterAndStatusNot(
+                        item.getId(), date.plusDays(10), Sort.unsorted(), BookingStatus.APPROVED);
         assertEquals(bookings.size(), 0);
     }
 }

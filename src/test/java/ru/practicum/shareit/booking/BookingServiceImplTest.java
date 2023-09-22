@@ -313,18 +313,32 @@ class BookingServiceImplTest {
         assertEquals("no such user id =99", e.getMessage());
     }
 
+//    @Test
+//    void getBookingByIdNotAccess() {
+//        when(bookingRepository.findById(anyLong()))
+//                .thenReturn(Optional.ofNullable(booking));
+//
+//        when(userRepository.findById(anyLong()))
+//                .thenReturn(Optional.of(new User(5L, "com", "commen@mail.ru")));
+//
+//        final NoSuchUserFound e = Assertions.assertThrows(
+//                NoSuchUserFound.class,
+//                () -> bookingService.getBookingById(1L, 99L));
+//        assertEquals("no such user id =99", e.getMessage());
+//    }
+
     @Test
     void getBookingByIdNotBookig() {
         when(bookingRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(booking));
 
         when(userRepository.findById(anyLong()))
-                .thenReturn(Optional.ofNullable(user));
+                .thenReturn(Optional.of(new User(51L, "name", "name@mail.ru")));
 
         final NoSuchBookingFound e = Assertions.assertThrows(
                 NoSuchBookingFound.class,
-                () -> bookingService.getBookingById(1L, 2L));
-        assertEquals("no booking id = 1 and user id = 2", e.getMessage());
+                () -> bookingService.getBookingById(1L, 51L));
+        assertEquals("no booking id = 1 and user id = 51", e.getMessage());
     }
 
 

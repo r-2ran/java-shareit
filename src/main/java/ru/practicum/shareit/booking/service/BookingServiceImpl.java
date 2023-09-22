@@ -35,20 +35,18 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+
 
     @Transactional
     @Override
     public BookingDto addBooking(BookingDtoInput bookingDtoInput, Long userId) throws
             NoSuchItemFound, NoSuchUserFound, BookingException {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no such user id =%d", userId));
-        }
-        User booker = userRepository.findById(userId).get();
-        if (itemRepository.findById(bookingDtoInput.getItemId()).isEmpty()) {
-            throw new NoSuchItemFound(String.format("no such item id =%d",
-                    bookingDtoInput.getItemId()));
-        }
-        Item item = itemRepository.findById(bookingDtoInput.getItemId()).get();
+        User booker = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no such user id =%d", userId)));
+        Item item = itemRepository.findById(bookingDtoInput.getItemId()).orElseThrow(() ->
+                new NoSuchItemFound(String.format("no such item id =%d",
+                        bookingDtoInput.getItemId())));
         if (booker.getId().equals(item.getOwner().getId())) {
             throw new NoSuchUserFound(String.format("owner id = %d cannot be booker", userId));
         }
@@ -73,18 +71,15 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto updateBooking(Long bookingId, Long userId, boolean approved) throws
             NoSuchItemFound, NoSuchUserFound, BookingException, NoSuchBookingFound {
-        if (bookingRepository.findById(bookingId).isEmpty()) {
-            throw new NoSuchBookingFound(String.format("no booking id = %d", bookingId));
-        }
-        Booking booking = bookingRepository.findById(bookingId).get();
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no such user id =%d", userId));
-        }
-        if (!Objects.equals(itemRepository.findById(booking.getItem().getId()).get().getOwner().getId(), userId)) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
+                new NoSuchBookingFound(String.format("no booking id = %d", bookingId)));
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no such user id =%d", userId)));
+        if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new NoSuchBookingFound(String.format("user id = %d have not access to approving",
                     userId));
         }
-        if (bookingRepository.findById(bookingId).get().getStatus().equals(BookingStatus.APPROVED)) {
+        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
             throw new BookingException(String.format("booking id = %d is already approved", bookingId));
         }
         if (approved) {
@@ -112,20 +107,17 @@ public class BookingServiceImpl implements BookingService {
             throw new NoSuchBookingFound(String.format("no booking id = %d and user id = %d",
                     bookingId, userId));
         }
-        return BookingMapper.toBookingDto(bookingRepository.findById(bookingId).get());
+        return BookingMapper.toBookingDto(booking);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getBookingByBooker(Long userId, String stateStr,
-                                               int from, int size)
-            throws BookingException, NoSuchUserFound {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no such user id =%d", userId));
-        }
+                                               int from, int size) throws BookingException, NoSuchUserFound {
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no such user id =%d", userId)));
         List<Booking> bookings = new ArrayList<>();
         LocalDateTime date = LocalDateTime.now();
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         State state;
         try {
             state = State.valueOf(stateStr);
@@ -173,7 +165,6 @@ public class BookingServiceImpl implements BookingService {
         }
         List<Booking> bookings = new ArrayList<>();
         LocalDateTime date = LocalDateTime.now();
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         State state;
         try {
             state = State.valueOf(stateStr);

@@ -63,16 +63,24 @@ class ItemServiceImplTest {
 
     private Item item = new Item(1L, "item", "description", true, owner,
             request);
-    private Item itemNoRequest = new Item(1L, "item", "description", true, owner,
+    private Item itemUpd = new Item(10L, "item", "description", false, owner,
+            request);
+    private Item itemNoRequest = new Item(2L, "item", "description", true, owner,
             null);
     private ItemDto itemDto = new ItemDto(1L, "item", "description", true, owner,
             request.getId());
+    private ItemDto itemDtoNoReq = new ItemDto(2L, "item", "description", true, owner,
+            null);
     private Booking booking = new Booking(1L, date.minusDays(10), date.minusDays(5), item,
             booker, BookingStatus.APPROVED);
     private Comment comment = new Comment(1L, "text", item, booker, date);
     private CommentDto commentDto = new CommentDto("text");
-    Booking lastBooking = new Booking();
-    Booking nextBooking = new Booking();
+    private Booking lastBooking = new Booking();
+    private Booking last = new Booking(1L, date.minusDays(5), date.plusDays(5), item, booker,
+            BookingStatus.APPROVED);
+    private Booking nextBooking = new Booking();
+    private Booking next = new Booking(1L, date.plusDays(10), date.plusDays(15), item, booker,
+            BookingStatus.APPROVED);
 
     @Test
     void addItem() {
@@ -90,12 +98,13 @@ class ItemServiceImplTest {
     void addItemNoRequest() {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(owner));
+
         when(itemRequestRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(request));
+
         when(itemRepository.save(any(Item.class)))
                 .thenReturn(itemNoRequest);
-
-        assertEquals(itemService.addItem(owner.getId(), itemDto).getId(), itemDto.getId());
+        assertEquals(itemService.addItem(2L, itemDtoNoReq).getId(), 2);
     }
 
     @Test
@@ -126,7 +135,7 @@ class ItemServiceImplTest {
         Item updatedItem = item;
         updatedItem.setName("new name");
         updatedItem.setDescription("new description");
-        updatedItem.setIsAvailable(Boolean.FALSE);
+        updatedItem.setIsAvailable(Boolean.valueOf(false));
         when(itemRepository.save(any(Item.class)))
                 .thenReturn(updatedItem);
 
@@ -137,7 +146,24 @@ class ItemServiceImplTest {
         assertEquals(itemService
                         .updateItem(owner.getId(), updated, item.getId()).getDescription(),
                 updatedItem.getDescription());
+        assertEquals(itemService
+                        .updateItem(1L, updated, item.getId()).getAvailable(),
+                updatedItem.getIsAvailable());
+    }
 
+    @Test
+    void updateItemNoValue() {
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+        ItemDto updated = new ItemDto();
+        updated.setId(1L);
+
+        when(itemRepository.save(any()))
+                .thenReturn(item);
+        assertEquals(itemService.updateItem(1L, updated, 1L).getId(),
+                itemDto.getId());
     }
 
     @Test
@@ -180,10 +206,21 @@ class ItemServiceImplTest {
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
 
-        when(bookingRepository.findAllByItemIdAndStartIsBefore(anyLong(), any(LocalDateTime.class), any(Sort.class)))
-                .thenReturn(List.of(lastBooking));
-        when(bookingRepository.findAllByItemIdAndStartIsAfter(anyLong(), any(LocalDateTime.class), any(Sort.class)))
-                .thenReturn(List.of(nextBooking));
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        when(commentRepository.findAll())
+                .thenReturn(List.of(comment));
+
+        when(bookingRepository
+                .findAllByItemIdAndStartIsBeforeAndStatusNot(anyLong(), any(LocalDateTime.class), any(Sort.class),
+                        any(BookingStatus.class)))
+                .thenReturn(List.of(last));
+
+        when(bookingRepository
+                .findAllByItemIdAndStartIsAfterAndStatusNot(anyLong(), any(LocalDateTime.class), any(Sort.class),
+                        any(BookingStatus.class)))
+                .thenReturn(List.of(next));
 
         assertEquals(itemService.getItemById(1L, 1L).getId(), 1);
 
@@ -320,5 +357,31 @@ class ItemServiceImplTest {
                 BookingException.class,
                 () -> itemService.addComment(1L, commentDto, 99L));
         Assertions.assertEquals("item id = 1 by user id = 99 has not been rented", exception.getMessage());
+    }
+
+    @Test
+    void bookingAdd() {
+        when(bookingRepository.findAllByItemIdAndStartIsBeforeAndStatusNot(anyLong(), any(LocalDateTime.class),
+                any(Sort.class), any(BookingStatus.class)))
+                .thenReturn(List.of(last, lastBooking));
+        when(bookingRepository
+                .findAllByItemIdAndStartIsAfterAndStatusNot(anyLong(), any(LocalDateTime.class),
+                        any(Sort.class), any(BookingStatus.class)))
+                .thenReturn(List.of(next, nextBooking));
+
+        assertEquals(itemService.addBooking(1L, itemDto).getId(), 1L);
+    }
+
+    @Test
+    void bookingAddEmpty() {
+        when(bookingRepository.findAllByItemIdAndStartIsBeforeAndStatusNot(anyLong(), any(LocalDateTime.class),
+                any(Sort.class), any(BookingStatus.class)))
+                .thenReturn(new ArrayList<>());
+        when(bookingRepository
+                .findAllByItemIdAndStartIsAfterAndStatusNot(anyLong(), any(LocalDateTime.class),
+                        any(Sort.class), any(BookingStatus.class)))
+                .thenReturn(new ArrayList<>());
+
+        assertEquals(itemService.addBooking(1L, itemDto).getId(), 1L);
     }
 }

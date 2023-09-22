@@ -22,6 +22,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +50,9 @@ class ItemRequestServiceImplTest {
             date.minusHours(5));
     private Item item = new Item(1L, "item", "decsription", true,
             owner, request);
+    private Item itemNoRequest = new Item(1L, "item", "decsription", true,
+            owner, null);
+
 
     @Test
     void addRequest() {
@@ -87,6 +91,24 @@ class ItemRequestServiceImplTest {
 
         when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
                 .thenReturn(item);
+
+        assertEquals(request.getId(), itemRequestService.getRequestById(1L, 2L).getId());
+    }
+
+    @Test
+    void getRequestByIdItemNotReq() {
+        Item item1 = new Item();
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(requestor));
+
+        when(requestRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(new ArrayList<>());
+
+        when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
+                .thenReturn(item1);
 
         assertEquals(request.getId(), itemRequestService.getRequestById(1L, 2L).getId());
     }
@@ -152,6 +174,24 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    void getAllByRequestorItemNotRequest() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(requestor));
+
+        when(requestRepository.findAllByRequestorId(anyLong(), any(Sort.class)))
+                .thenReturn(List.of(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(new ArrayList<>());
+
+        when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
+                .thenReturn(item);
+
+        assertEquals(request.getId(), itemRequestService
+                .getAllByRequestor(requestor.getId()).get(0).getId());
+    }
+
+    @Test
     void getAllByRequestorNotUser() {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
@@ -182,6 +222,22 @@ class ItemRequestServiceImplTest {
 
         when(itemRepository.findAllByRequestId(anyLong()))
                 .thenReturn(List.of(item));
+
+        when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
+                .thenReturn(item);
+        assertTrue(itemRequestService.getAll(owner.getId(), 0, 5).isEmpty());
+    }
+
+    @Test
+    void getAllItemNotRequest() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(owner));
+
+        when(requestRepository.findAllByRequestorIdNot(1L, Pageable.unpaged()))
+                .thenReturn(List.of(request));
+
+        when(itemRepository.findAllByRequestId(anyLong()))
+                .thenReturn(new ArrayList<>());
 
         when(itemRepository.findByIdAndRequestId(anyLong(), anyLong()))
                 .thenReturn(item);
