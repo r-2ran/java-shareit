@@ -106,6 +106,7 @@ class UserServiceImplTest {
 
     @Test
     void deleteUser() {
+        userRepository.deleteById(anyLong());
         verify(userRepository, times(1))
                 .deleteById(anyLong());
     }
