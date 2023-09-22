@@ -60,4 +60,19 @@ public class BookingMapper {
                 booking.getBooker().getId()
         );
     }
+
+    public static List<Booking> fromPage(List<Booking> bookings) {
+        List<Booking> res = new ArrayList<>();
+        for (Booking booking : bookings) {
+            res.add(new Booking(
+                    booking.getId(),
+                    booking.getStart(),
+                    booking.getEnd(),
+                    booking.getItem(),
+                    booking.getBooker(),
+                    booking.getStatus()
+            ));
+        }
+        return res;
+    }
 }

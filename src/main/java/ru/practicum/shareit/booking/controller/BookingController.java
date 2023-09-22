@@ -21,40 +21,39 @@ public class BookingController {
 
     @PostMapping
     BookingDto addBooking(@Valid @RequestBody BookingDtoInput bookingDtoInput,
-                          @RequestHeader(USER_ID) long userId) {
+                          @RequestHeader(USER_ID) Long userId) {
         return bookingService.addBooking(bookingDtoInput, userId);
     }
 
-    @DeleteMapping("/{bookingId}")
-    void deleteBooking(@PathVariable long bookingId) {
-        bookingService.deleteBooking(bookingId);
-    }
-
     @GetMapping("/{bookingId}")
-    BookingDto getBookingById(@PathVariable long bookingId,
-                              @RequestHeader(USER_ID) long userId) {
+    BookingDto getBookingById(@PathVariable Long bookingId,
+                              @RequestHeader(USER_ID) Long userId) {
         return bookingService.getBookingById(bookingId, userId);
     }
 
     @PatchMapping("/{bookingId}")
-    BookingDto updateBooking(@PathVariable long bookingId,
-                             @RequestHeader(USER_ID) long userId,
+    BookingDto updateBooking(@PathVariable Long bookingId,
+                             @RequestHeader(USER_ID) Long userId,
                              @RequestParam boolean approved) {
         return bookingService.updateBooking(bookingId, userId, approved);
     }
 
     @GetMapping
-    List<BookingDto> getBookingsByBooker(@RequestHeader(USER_ID) long userId,
+    List<BookingDto> getBookingsByBooker(@RequestHeader(USER_ID) Long userId,
                                          @RequestParam(name = "state",
-                                                 required = false, defaultValue = "ALL") String state) {
-        return bookingService.getBookingByBooker(userId, state);
+                                                 required = false, defaultValue = "ALL") String state,
+                                         @RequestParam(defaultValue = "0") int from,
+                                         @RequestParam(defaultValue = "10") int size) {
+        return bookingService.getBookingByBooker(userId, state, from, size);
     }
 
     @GetMapping("/owner")
-    List<BookingDto> getBookingsByOwner(@RequestHeader(USER_ID) long userId,
+    List<BookingDto> getBookingsByOwner(@RequestHeader(USER_ID) Long userId,
                                         @RequestParam(name = "state",
                                                 required = false,
-                                                defaultValue = "ALL") String state) {
-        return bookingService.getBookingByOwner(userId, state);
+                                                defaultValue = "ALL") String state,
+                                        @RequestParam(defaultValue = "0") int from,
+                                        @RequestParam(defaultValue = "10") int size) {
+        return bookingService.getBookingByOwner(userId, state, from, size);
     }
 }

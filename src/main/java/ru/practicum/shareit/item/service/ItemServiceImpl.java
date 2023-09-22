@@ -17,6 +17,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.exception.NoSuchUserFound;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -26,9 +27,7 @@ import static ru.practicum.shareit.item.mapper.ItemMapper.*;
 import static ru.practicum.shareit.item.mapper.CommentMapper.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -37,32 +36,34 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
+    private final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+    private final Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
 
     @Transactional
     @Override
-    public ItemDto addItem(long userId, ItemDto itemDto) throws NoSuchUserFound {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no such user id = %d, " +
-                    "so cannot add item,", userId));
-        } else {
-            User user = userRepository.findById(userId).get();
-            Item item = toItem(itemDto);
-            item.setOwner(user);
+    public ItemDto addItem(Long userId, ItemDto itemDto) throws NoSuchUserFound {
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no such user id = %d, " +
+                        "so cannot add item", userId)));
+        Item item = toItem(itemDto);
+        item.setOwner(user);
+        if (itemDto.getRequestId() != null) {
+            item.setRequest(itemRequestRepository.findById(itemDto.getRequestId()).get());
             return toItemDto(itemRepository.save(item));
         }
+        return toItemDto(itemRepository.save(item));
+
     }
 
     @Transactional
     @Override
-    public ItemDto updateItem(long itemId, ItemDto itemDto, long userId)
+    public ItemDto updateItem(Long itemId, ItemDto itemDto, Long userId)
             throws NoSuchUserFound, NoSuchItemFound {
-        if (itemRepository.findById(itemId).isEmpty()) {
-            throw new NoSuchItemFound(String.format("no such item id = %d", itemId));
-        }
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no such user id = %d", userId));
-        }
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemRepository.findById(itemId).orElseThrow(() ->
+                new NoSuchItemFound(String.format("no such item id = %d", itemId)));
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no such user id = %d", userId)));
         if (itemDto.getName() != null) {
             item.setName(itemDto.getName());
         }
@@ -77,57 +78,24 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public ItemDto getItemById(long itemId, long userId) throws NoSuchUserFound,
+    public ItemDto getItemById(Long itemId, Long userId) throws NoSuchUserFound,
             NoSuchItemFound {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
-        if (itemRepository.findById(itemId).isEmpty()) {
-            throw new NoSuchItemFound(String.format("no such item id = %d", itemId));
-        }
-        ItemDto item = toItemDto(itemRepository.findById(itemId).get());
-        item.setComments(CommentMapper.toCommentDtosList(commentRepository.findAll()));
-        if (itemRepository.findById(itemId).get().getOwner().getId() == userId) {
-            LocalDateTime time = LocalDateTime.now();
-            Sort sort = Sort.by(Sort.Direction.DESC, "start");
-            Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
-            Optional<Booking> lastBooking =
-                    bookingRepository.findAllByItemIdAndStartIsBefore(
-                                    itemId,
-                                    time,
-                                    sort)
-                            .stream()
-                            .findFirst();
-            lastBooking.ifPresent(booking -> item.setLastBooking(fromBooking(booking)));
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no user id = %d", userId)));
+        Item item = itemRepository.findById(itemId).orElseThrow(() ->
+                new NoSuchItemFound(String.format("no such item id = %d", itemId)));
 
-            if (lastBooking.isEmpty() &&
-                    !bookingRepository.findAllByItemId(itemId, sort).isEmpty()) {
-                return item;
-            }
-            Optional<Booking> nextBooking =
-                    bookingRepository.findAllByItemIdAndStartIsAfter(
-                                    itemId,
-                                    time,
-                                    sortNext)
-                            .stream()
-                            .findFirst();
-            nextBooking.ifPresent(booking -> item.setNextBooking(fromBooking(booking)));
-            if (nextBooking.isEmpty()) {
-                lastBooking = bookingRepository.findAllByItemIdAndEndIsAfter(
-                                itemId,
-                                time,
-                                sort)
-                        .stream()
-                        .findFirst();
-                lastBooking.ifPresent(booking -> item.setLastBooking(fromBooking(booking)));
-            }
+        ItemDto itemDto = toItemDto(item);
+        itemDto.setComments(CommentMapper.toCommentDtosList(commentRepository.findAll()));
+        if (itemDto.getOwner().getId().equals(userId)) {
+            itemDto = addBooking(itemId, itemDto);
         }
-        return item;
+        return itemDto;
     }
 
     @Transactional
     @Override
-    public List<ItemDto> searchItem(String text, long userId) {
+    public List<ItemDto> searchItem(String text, Long userId) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
@@ -136,34 +104,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> getAllItemsByUser(long userId) throws NoSuchUserFound {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchUserFound(String.format("no user id = %d", userId));
-        }
+    public List<ItemDto> getAllItemsByUser(Long userId) throws NoSuchUserFound {
+
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchUserFound(String.format("no user id = %d", userId)));
         List<ItemDto> items = toItemDtoList(itemRepository.findAllByOwnerId(userId));
         for (ItemDto itemDto : items) {
-            if (itemRepository.findById(itemDto.getId()).get().getOwner().getId() == userId
-                    && !bookingRepository.findAllByItemId(itemDto.getId(), Sort.unsorted()).isEmpty()) {
-                LocalDateTime time = LocalDateTime.now();
-                Sort sort = Sort.by(Sort.Direction.DESC, "start");
-                Sort sortNext = Sort.by(Sort.Direction.ASC, "start");
-                Optional<Booking> lastBooking =
-                        bookingRepository.findAllByItemIdAndStartIsBefore(
-                                        itemDto.getId(),
-                                        time,
-                                        sort)
-                                .stream()
-                                .findFirst();
-                lastBooking.ifPresent(booking -> itemDto.setLastBooking(fromBooking(booking)));
-
-                Optional<Booking> nextBooking =
-                        bookingRepository.findAllByItemIdAndStartIsAfter(
-                                        itemDto.getId(),
-                                        time,
-                                        sortNext)
-                                .stream()
-                                .findFirst();
-                nextBooking.ifPresent(booking -> itemDto.setNextBooking(fromBooking(booking)));
+            if (itemDto.getOwner().getId().equals(userId)) {
+                itemDto = addBooking(itemDto.getId(), itemDto);
             }
         }
         return items;
@@ -171,7 +119,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public CommentDtoOutput addComment(long itemId, CommentDto commentDto, long userId)
+    public CommentDtoOutput addComment(Long itemId, CommentDto commentDto, Long userId)
             throws NoSuchUserFound, NoSuchItemFound, BookingException {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoSuchUserFound(String.format("no user id = %d", userId));
@@ -194,5 +142,26 @@ public class ItemServiceImpl implements ItemService {
         comment.setAuthor(user);
         comment.setItem(item);
         return commentToOutput(commentRepository.save(comment));
+    }
+
+    public ItemDto addBooking(Long itemId, ItemDto item) {
+        LocalDateTime time = LocalDateTime.now();
+        List<Booking> bookingsLast = bookingRepository.findAllByItemIdAndStartIsBeforeAndStatusNot(itemId, time, sort,
+                BookingStatus.REJECTED);
+        Optional<Booking> lastBooking = bookingsLast
+                .stream()
+                .findFirst();
+        if (lastBooking.isPresent())
+            item.setLastBooking(fromBooking(lastBooking.get()));
+
+        List<Booking> bookingsNext = bookingRepository
+                .findAllByItemIdAndStartIsAfterAndStatusNot(itemId, time, sortNext,
+                        BookingStatus.REJECTED);
+        Optional<Booking> nextBooking = bookingsNext
+                .stream()
+                .findFirst();
+        if (nextBooking.isPresent())
+            item.setNextBooking(fromBooking(nextBooking.get()));
+        return item;
     }
 }

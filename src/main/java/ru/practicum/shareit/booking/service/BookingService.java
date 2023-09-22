@@ -8,15 +8,15 @@ import java.util.List;
 
 @Service
 public interface BookingService {
-    BookingDto addBooking(BookingDtoInput bookingDto, long userId);
+    BookingDto addBooking(BookingDtoInput bookingDto, Long userId);
 
-    void deleteBooking(long bookingId);
+    BookingDto updateBooking(Long bookingId, Long userId, boolean approve);
 
-    BookingDto updateBooking(long bookingId, long userId, boolean approve);
+    BookingDto getBookingById(Long bookingId, Long userId);
 
-    BookingDto getBookingById(long bookingId, long userId);
+    List<BookingDto> getBookingByBooker(Long userId, String state,
+                                        int from, int size);
 
-    List<BookingDto> getBookingByBooker(long userId, String state);
-
-    List<BookingDto> getBookingByOwner(long userId, String state);
+    List<BookingDto> getBookingByOwner(Long userId, String state,
+                                       int from, int size);
 }

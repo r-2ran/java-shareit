@@ -40,12 +40,6 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void deleteUser(long userId) {
-        userRepository.deleteById(userId);
-    }
-
-    @Transactional
-    @Override
     public UserDto updateUser(long userId, UserDto userDto) {
         User inDB = UserMapper.toUser(getUserById(userId));
         if (userDto.getName() != null) {
@@ -55,5 +49,11 @@ public class UserServiceImpl implements UserService {
             inDB.setEmail(userDto.getEmail());
         }
         return UserMapper.toUserDto(userRepository.save(inDB));
+    }
+
+    @Transactional
+    @Override
+    public void deleteUser(long userId) {
+        userRepository.deleteById(userId);
     }
 }
