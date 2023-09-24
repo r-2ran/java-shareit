@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.Future;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 public class BookingDto {
     Long itemId;
     @NotNull
-    @Future
+    @FutureOrPresent
     LocalDateTime start;
     @NotNull
     @Future
