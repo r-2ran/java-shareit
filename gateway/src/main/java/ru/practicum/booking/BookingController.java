@@ -32,7 +32,7 @@ public class BookingController {
         return bookingClient.getAll(userId, state, from, size);
     }
 
-    @GetMapping
+    @GetMapping("/owner")
     public ResponseEntity<Object> getBookingsOwner(@RequestHeader(USER_ID) Long userId,
                                                    @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
