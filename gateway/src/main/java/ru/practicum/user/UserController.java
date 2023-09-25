@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.user.dto.UserDto;
 import javax.validation.Valid;
@@ -12,25 +11,24 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/users")
 @Slf4j
-@Validated
 @RequiredArgsConstructor
 public class UserController {
     private final UserClient userClient;
 
     @PostMapping
-    public ResponseEntity<Object> addUser(@RequestBody @Valid UserDto userDto) {
+    public ResponseEntity<Object> addUser(@Valid @RequestBody UserDto userDto) {
         return userClient.addUser(userDto);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
-        return userClient.getById(id);
+    @GetMapping("/{userId}")
+    public ResponseEntity<Object> getById(@PathVariable Long userId) {
+        return userClient.getById(userId);
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{userId}")
     public ResponseEntity<Object> updateUser(@RequestBody UserDto userDto,
-                                             @PathVariable Long id) {
-        return userClient.updateUser(id, userDto);
+                                             @PathVariable Long userId) {
+        return userClient.updateUser(userId, userDto);
     }
 
     @GetMapping
@@ -38,8 +36,8 @@ public class UserController {
         return userClient.getAll();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteById(@PathVariable Long id) {
-        return userClient.deleteById(id);
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Object> deleteById(@PathVariable Long userId) {
+        return userClient.deleteById(userId);
     }
 }

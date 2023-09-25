@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.item.dto.CommentDto;
 import ru.practicum.item.dto.ItemDto;
@@ -15,7 +14,6 @@ import javax.validation.Valid;
 @RequestMapping("/items")
 @Slf4j
 @RequiredArgsConstructor
-@Validated
 public class ItemController {
     private final ItemClient itemClient;
     private static final String USER_ID = "X-Sharer-User-Id";
@@ -33,7 +31,7 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<Object> addItem(@RequestHeader(USER_ID) Long userId,
-                                          @RequestBody @Valid ItemDto itemDto) {
+                                          @Valid @RequestBody ItemDto itemDto) {
         return itemClient.addItem(userId, itemDto);
     }
 
