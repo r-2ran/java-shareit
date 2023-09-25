@@ -43,7 +43,7 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> bookItem(@RequestHeader(USER_ID) Long userId,
+    public ResponseEntity<Object> addBooking(@RequestHeader(USER_ID) Long userId,
                                            @RequestBody @Valid BookingDto bookingDto) {
         return bookingClient.addBooking(userId, bookingDto);
     }
@@ -57,7 +57,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> updateBooking(@PathVariable Long bookingId,
                                                 @RequestHeader(USER_ID) Long userId,
-                                                @RequestParam(value = "approved") boolean approved) {
+                                                @RequestParam Boolean approved) {
         return bookingClient.updateBooking(bookingId, userId, approved);
     }
 }
