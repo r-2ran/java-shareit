@@ -261,7 +261,7 @@ class ItemServiceImplTest {
     void getAllItemsByUser() {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(owner));
-        when(itemRepository.findAllByOwnerId(anyLong()))
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(item));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
@@ -273,7 +273,7 @@ class ItemServiceImplTest {
     void getAllItemsByOwner() {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(owner));
-        when(itemRepository.findAllByOwnerId(anyLong()))
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(item));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
@@ -292,7 +292,7 @@ class ItemServiceImplTest {
         when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
-        when(itemRepository.findAllByOwnerId(anyLong()))
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(item));
 
         when(itemRepository.findById(anyLong()))

@@ -109,7 +109,7 @@ public class ItemServiceImpl implements ItemService {
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchUserFound(String.format("no user id = %d", userId)));
-        List<ItemDto> items = toItemDtoList(itemRepository.findAllByOwnerId(userId));
+        List<ItemDto> items = toItemDtoList(itemRepository.findAllByOwnerIdOrderByIdAsc(userId));
         for (ItemDto itemDto : items) {
             if (itemDto.getOwner().getId().equals(userId)) {
                 itemDto = addBooking(itemDto.getId(), itemDto);

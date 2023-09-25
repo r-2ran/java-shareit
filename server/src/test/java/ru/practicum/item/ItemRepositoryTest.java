@@ -63,7 +63,7 @@ class ItemRepositoryTest {
 
     @Test
     void findAllByOwnerId() {
-        List<Item> items = itemRepository.findAllByOwnerId(owner.getId());
+        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(owner.getId());
         assertEquals(item, items.get(0));
         assertEquals(items.size(), 1);
     }
