@@ -17,7 +17,8 @@ public class UserClient extends BaseClient {
     @Autowired
     public UserClient(@Value("${shareit-server.url}") String serverUrl, RestTemplateBuilder builder) {
         super(builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
+                .uriTemplateHandler(new DefaultUriBuilderFactory(String.format("%s%s",
+                        serverUrl, API_PREFIX)))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build()
         );
